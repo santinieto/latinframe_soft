@@ -34,8 +34,8 @@ def execute_db_fetch():
 
 def execute_tests():
     loader = unittest.TestLoader()
-    # suite = loader.discover(start_dir='./tests/', pattern='test_*.py')
-    suite = loader.discover(start_dir='./tests/', pattern='test_channel.py')
+    suite = loader.discover(start_dir='./tests/', pattern='test_*.py')
+    # suite = loader.discover(start_dir='./tests/', pattern='test_channel.py')
     runner = unittest.TextTestRunner()
     result = runner.run(suite)
 
@@ -98,29 +98,30 @@ if __name__ == '__main__':
     for kk, arg in enumerate(args[1:]):
 
         # Ejecuto los tests de los modulos
-        if arg == 'runtest':
+        if arg == '-runtest':
             execute_tests()
 
         # Ejecuto el scraping
-        if arg == 'runscrap':
+        if arg == '-runscrap':
             subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
             subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
             subarg_3 = args[kk + 4] if kk + 4 < len(args) else None
 
             # Obtengo el mensaje de ayuda
-            if subarg_1 == 'help':
+            if subarg_1 == '-help':
                 print('Usage:')
                 print(f'python {script_name} {arg} []')
-                print( '\t- <None/all> - Executa all scraps')
-                print( '\t- video <video_id/"url"> [] - Scrap a single video')
-                print( '\t\t- save_html - Save HTML content (optional)')
+                print( '\t NULL : Execute all scraps')
+                print( '\t -all : Execute all scraps')
+                print( '\t -video <video_id/"url"> [] : Scrap a single video')
+                print( '\t\t -save_html : Save HTML content (optional)')
 
             # Obtengo la informacion de un video unico
-            if subarg_1 == 'video':
+            if subarg_1 == '-video':
 
                 # Verifico si el argumento de entrada es una URL
                 # Ejemplo:
-                # python manage.py runscrap video "https://www.youtube.com/watch?v=55O5Gnwbp14&ab_channel=Acre" save_html
+                # python manage.py -runscrap -video "https://www.youtube.com/watch?v=55O5Gnwbp14&ab_channel=Acre" -save_html
                 if '.com' in subarg_2:
                     url = subarg_2
                     html_content = getHTTPResponse(url, responseType = 'text')
@@ -128,22 +129,25 @@ if __name__ == '__main__':
 
                 # Sino, tomo al argumento de entrada como un ID
                 # Ejemplo:
-                # python manage.py runscrap video 55O5Gnwbp14 save_html
+                # python manage.py -runscrap -video 55O5Gnwbp14 -save_html
                 else:
                     video_id = subarg_2
                     video = Video(id=video_id, en_html_save=False)
 
                 # Guardo el contenido HTML si fuera necesario
-                if subarg_3 == 'save_html':
+                if subarg_3 == '-save_html':
                     video.save_html_content()
 
             # Ejecuto todo el scraper
-            if ((arg == 'all') or
+            # Ejemplo:
+            # python manage.py -runscrap -all
+            # python manage.py -runscrap
+            if ((subarg_1 == '-all') or
                 (subarg_1 is None and subarg_2 is None)
                ):
                 execute_scrap()
 
-        if arg == 'fetch':
+        if arg == '-fetch':
             execute_db_fetch()
 
     # Clear environment variables
