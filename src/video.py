@@ -15,7 +15,7 @@ from src.utils import o_fmt_error
 from src.utils import get_formatted_date
 
 class Video:
-    def __init__(self, id=None, html_content=None, debug=True):
+    def __init__(self, id=None, html_content=None, debug=True, en_html_save=True):
         """ Constructor of class Video, it requires one of two options:
             - Video ID to look on Youtube
             - Scrap of HTML content to look the information
@@ -58,6 +58,7 @@ class Video:
         self.channel_id = ''
         self.channel_name = ''
         self.debug = debug
+        self.en_html_save = en_html_save
         self.title = "Unknown"
         self.views = 0
         self.likes = 0
@@ -104,9 +105,23 @@ class Video:
             'videoCommentsCount': self.comments_cnt,
         }
 
-    def get_id(self):
+    def get_id(self, pattern=None):
         """Get the ID for the video from the HTML content"""
-        pass
+
+        # If a custom pattern is given, use it, if not use a default one
+        pattern = r'"videoId":"(.*?)"' if pattern is None else pattern
+
+        # Get the required information using the classic method
+        err_code = '0017'
+        err_msg = f'Could not fetch ID for video. Pattern {pattern}'
+        self.id = self._fetch_data_from_pattern(
+            pattern, self.html_content, err_code, err_msg
+        )
+
+        # Aca deberia haber otro intento de procesamiento
+        if self.id is None:
+            # Bajo la bandera de analisis correcto
+            self.process_success = False
 
     def get_html_content(self, ovr_id=None, scrap_url=None):
         """ Get the HTML scrap for the given video.
@@ -174,7 +189,9 @@ class Video:
                 cprint('-' * 100)
 
             # Guardar scrap HTML si algo salio mal
-            if self.process_success is False:
+            if ((self.process_success is False) and
+                (self.en_html_save is True)
+               ):
                 self.save_html_content()
 
     def _fetch_data_from_pattern(self, pattern, html, err_code, err_msg):

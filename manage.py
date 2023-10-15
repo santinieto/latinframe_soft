@@ -6,9 +6,10 @@ import pandas as pd
 
 # My modules
 from src.channel import Channel
+from src.video import Video
 from src.db import Database
 from src.db_fetch import *
-from src.utils import cprint
+from src.utils import cprint, getHTTPResponse
 
 # Functions
 def set_environment():
@@ -82,28 +83,68 @@ def execute_scrap():
             for key in videos_dicc.keys():
                 db.insert_video_record(videos_dicc[key])
 
-# Main function
+# Funcion principal del programa
 if __name__ == '__main__':
-    # Set environment
+    # Preparo el entorno para operar
     set_environment()
 
-    # Get access to the arguments
+    # Obtengo los argumentos dados al programa
     args = sys.argv
 
-    # Get script name
+    # Obtener el nombre del script
     script_name = args[0]
 
-    # Get option
-    opt_1 = args[1]
+    # Recorrer los demas argumentos
+    for kk, arg in enumerate(args[1:]):
 
-    if opt_1 == 'runtest':
-        execute_tests()
+        # Ejecuto los tests de los modulos
+        if arg == 'runtest':
+            execute_tests()
 
-    if opt_1 == 'runscrap':
-        execute_scrap()
+        # Ejecuto el scraping
+        if arg == 'runscrap':
+            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
+            subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
+            subarg_3 = args[kk + 4] if kk + 4 < len(args) else None
 
-    if opt_1 == 'fetch':
-        execute_db_fetch()
+            # Obtengo el mensaje de ayuda
+            if subarg_1 == 'help':
+                print('Usage:')
+                print(f'python {script_name} {arg} []')
+                print( '\t- <None/all> - Executa all scraps')
+                print( '\t- video <video_id/"url"> [] - Scrap a single video')
+                print( '\t\t- save_html - Save HTML content (optional)')
+
+            # Obtengo la informacion de un video unico
+            if subarg_1 == 'video':
+
+                # Verifico si el argumento de entrada es una URL
+                # Ejemplo:
+                # python manage.py runscrap video "https://www.youtube.com/watch?v=55O5Gnwbp14&ab_channel=Acre" save_html
+                if '.com' in subarg_2:
+                    url = subarg_2
+                    html_content = getHTTPResponse(url, responseType = 'text')
+                    video = Video(html_content=html_content)
+
+                # Sino, tomo al argumento de entrada como un ID
+                # Ejemplo:
+                # python manage.py runscrap video 55O5Gnwbp14 save_html
+                else:
+                    video_id = subarg_2
+                    video = Video(id=video_id, en_html_save=False)
+
+                # Guardo el contenido HTML si fuera necesario
+                if subarg_3 == 'save_html':
+                    video.save_html_content()
+
+            # Ejecuto todo el scraper
+            if ((arg == 'all') or
+                (subarg_1 is None and subarg_2 is None)
+               ):
+                execute_scrap()
+
+        if arg == 'fetch':
+            execute_db_fetch()
 
     # Clear environment variables
     unset_environment()
