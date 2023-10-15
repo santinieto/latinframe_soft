@@ -209,6 +209,19 @@ if __name__ == '__main__':
         if arg == '-fetch':
             execute_db_fetch()
 
+        if arg == '-export':
+            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
+
+            if subarg_1 == '-tocsv':
+                # Abro la conexion con la base de datos
+                with Database() as db:
+                    db.export_table(ext='.csv')
+
+            if subarg_1 == '-toexcel':
+                # Abro la conexion con la base de datos
+                with Database() as db:
+                    db.export_table(ext='.xlsx')
+
         if arg == '-genbkp':
             date = get_formatted_date()
 

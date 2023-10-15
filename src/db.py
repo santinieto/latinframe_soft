@@ -161,30 +161,35 @@ class Database:
         )
         self.exec(query, params)
 
-    def export_table_to_csv(self, table_name, csv_file_name):
-        query = f"SELECT * FROM {table_name}"
-        self.cursor.execute(query)
-        rows = self.cursor.fetchall()
+    def export_table(self, table_name='CHANNEL', path='results/db/', ext='.csv'):
+        import pandas as pd
 
-        if not rows:
-            msg = f"No data found in the '{table_name}' table."
-            o_fmt_error('0003', msg, 'Class__Database')
-            return
+        table_names = [
+            'VIDEO','VIDEO_RECORDS','CHANNEL','CHANNEL_RECORDS'
+        ]
 
-        with open(csv_file_name, mode='w', newline='') as csv_file:
-            csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for table_name in table_names:
+            # Paso el nombre de la tabla a minusculas
+            table_name = table_name.lower()
 
-            # Obtén los nombres de las columnas
-            column_names = [description[0] for description in self.cursor.description]
+            # Nombre de la tabla a exportar
+            query = f"SELECT * FROM {table_name}"
 
-            # Escribe los nombres de las columnas como la primera fila en el archivo CSV
-            csv_writer.writerow(column_names)
+            # Obtengo los datos de la tabla
+            df = pd.read_sql_query(query, self.conn)
 
-            # Escribe los datos de la tabla en el archivo CSV
-            for row in rows:
-                csv_writer.writerow(row)
+            # Defino el tipo de exportacion
+            if ext == '.csv':
+                filename = f'{path}/{table_name}.csv'
+                df.to_csv(filename, index=False)
+            elif ext == '.xlsx':
+                filename = f'{path}/{table_name}.xlsx'
+                df.to_excel(filename, index=False)
+            else:
+                print('Formato no valido')
+                return
 
-        print(f"Data from the '{table_name}' table has been exported to '{csv_file_name}'.")
+            print(f"Data from the '{table_name}' table has been exported to '{filename}'.")
 
     #############################################################
     # Especific functions
