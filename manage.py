@@ -3,6 +3,7 @@ import sys
 import unittest
 import os
 import pandas as pd
+import shutil
 
 # My modules
 from src.channel import Channel
@@ -10,6 +11,7 @@ from src.video import Video
 from src.db import Database
 from src.db_fetch import *
 from src.utils import cprint, getHTTPResponse
+from src.utils import get_formatted_date
 
 # Functions
 def set_environment():
@@ -206,6 +208,28 @@ if __name__ == '__main__':
 
         if arg == '-fetch':
             execute_db_fetch()
+
+        if arg == '-genbkp':
+            date = get_formatted_date()
+
+            # Abro la conexion con la base de datos
+            with Database() as db:
+
+                # Rutas de origen y destino
+                bkp_filename = 'db_backups/' + db.db_name.replace('.db',f'_{date}.db')
+
+                try:
+                    # Copia el archivo de la ruta de origen a la ruta de destino
+                    shutil.copy(db.db_name, bkp_filename)
+                    print(f"Archivo copiado de '{db.db_name}' a '{bkp_filename}'.")
+                except FileNotFoundError:
+                    print("El archivo de origen no fue encontrado.")
+                except shutil.SameFileError:
+                    print("El archivo de origen y destino son el mismo archivo.")
+                except PermissionError:
+                    print("No tienes permisos para copiar el archivo.")
+                except Exception as e:
+                    print(f"Ocurrió un error: {e}")
 
     # Clear environment variables
     unset_environment()

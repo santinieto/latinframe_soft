@@ -162,3 +162,4 @@ cython_debug/
 # Others
 results/channels/*.dat
 results/videos/*.dat
+*.db
