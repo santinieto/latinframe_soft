@@ -1,9 +1,11 @@
 import os
 import pandas as pd
 import datetime
+import shutil
 
 from src.db import Database
 from src.utils import cprint
+from src.utils import get_formatted_date
 
 def youtube_db_fetch():
     current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -44,3 +46,30 @@ def youtube_db_fetch():
                 current_time
             )
             db.exec(query, params)
+
+def sql_generate_db_backup():
+    """
+    Genero un backup de la base de datos anexandole la fecha
+    y hora actual
+    """
+
+    date = get_formatted_date()
+
+    # Abro la conexion con la base de datos
+    with Database() as db:
+
+        # Rutas de origen y destino
+        bkp_filename = 'db_backups/' + db.db_name.replace('.db',f'_{date}.db')
+
+        try:
+            # Copia el archivo de la ruta de origen a la ruta de destino
+            shutil.copy(db.db_name, bkp_filename)
+            print(f"Archivo copiado de '{db.db_name}' a '{bkp_filename}'.")
+        except FileNotFoundError:
+            print("El archivo de origen no fue encontrado.")
+        except shutil.SameFileError:
+            print("El archivo de origen y destino son el mismo archivo.")
+        except PermissionError:
+            print("No tienes permisos para copiar el archivo.")
+        except Exception as e:
+            print(f"Ocurrió un error: {e}")
