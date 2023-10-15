@@ -83,6 +83,28 @@ def execute_scrap():
             for key in videos_dicc.keys():
                 db.insert_video_record(videos_dicc[key])
 
+def sql_execute(query):
+    # Abro la conexion con la base de datos
+    with Database() as db:
+        # Obtengo la primer palabra
+        fw = query.split()[0].lower()
+
+        # Si es un SELECT tengo que mostrar los resultados
+        # Ejemplo:
+        # python manage.py -sql "SELECT CHANNEL_ID FROM CHANNEL"
+        # python manage.py -sql "SELECT * FROM CHANNEL"
+        # python manage.py -sql "select * from channel"
+        if fw == 'select':
+            results = db.select(query, ())
+            for result in results:
+                print(result)
+        # Si es otro tipo de consulta la ejecuto directamente
+        # Ejemplo
+        # python manage.py -sql "update channel set channel_name = 'toycantando_edit' where channel_id = 'UC2xjgvWb9cx5F637XjsUNxw'"
+        # python manage.py -sql "update channel set channel_name = 'toycantando' where channel_id = 'UC2xjgvWb9cx5F637XjsUNxw'"
+        else:
+            db.exec(query)
+
 # Funcion principal del programa
 if __name__ == '__main__':
     # Preparo el entorno para operar
@@ -149,6 +171,7 @@ if __name__ == '__main__':
 
         if arg == '-sql':
             subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
+            subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
 
             # Obtengo el mensaje de ayuda
             if subarg_1 == '-help':
@@ -156,29 +179,30 @@ if __name__ == '__main__':
                 print(f'python {script_name} {arg} []')
                 print( '\t "query" : Execute the given query')
 
+            # Verifico si tengo que leer un archivo
+            # Ejemplo
+            # python manage.py -sql -file sql/0015_query_1.sql
+            if subarg_1 == '-file':
+                filename = subarg_2
+                try:
+                    with open(filename, "r") as archivo:
+                        query = archivo.read()  # Lee todo el contenido del archivo y lo almacena en la cadena 'contenido'
+
+                    # Ahora 'contenido' contiene el contenido del archivo como una cadena
+                    print("SQL query:\n\n" + query)
+
+                    # Ejecuto el comando
+                    sql_execute(query)
+
+                except FileNotFoundError:
+                    print(f"El archivo '{filename}' no fue encontrado.")
+                except Exception as e:
+                    print(f"Ocurrió un error: {e}")
+
+            # Ejecuto el comando SQL
             else:
                 query = subarg_1
-
-                # Abro la conexion con la base de datos
-                with Database() as db:
-                    # Obtengo la primer palabra
-                    fw = query.split()[0].lower()
-
-                    # Si es un SELECT tengo que mostrar los resultados
-                    # Ejemplo:
-                    # python manage.py -sql "SELECT CHANNEL_ID FROM CHANNEL"
-                    # python manage.py -sql "SELECT * FROM CHANNEL"
-                    # python manage.py -sql "select * from channel"
-                    if fw == 'select':
-                        results = db.select(query, ())
-                        for result in results:
-                            print(result)
-                    # Si es otro tipo de consulta la ejecuto directamente
-                    # Ejemplo
-                    # python manage.py -sql "update channel set channel_name = 'toycantando_edit' where channel_id = 'UC2xjgvWb9cx5F637XjsUNxw'"
-                    # python manage.py -sql "update channel set channel_name = 'toycantando' where channel_id = 'UC2xjgvWb9cx5F637XjsUNxw'"
-                    else:
-                        db.exec(query)
+                sql_execute(query)
 
         if arg == '-fetch':
             execute_db_fetch()
