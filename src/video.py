@@ -66,6 +66,7 @@ class Video:
         self.mvm = '00:00:00'
         self.tags = "None"
         self.publish_date = "00/00/00"
+        self.process_success = True
 
         # Debug
         if self.debug is True:
@@ -164,12 +165,17 @@ class Video:
             self.fetch_video_length()
             self.fetch_video_tags()
             self.get_video_comments_count()
+
             # Debug
             if self.debug is True:
                 cprint('')
                 cprint('-' * 100)
                 cprint(str(self))
                 cprint('-' * 100)
+
+            # Guardar scrap HTML si algo salio mal
+            if self.process_success is False:
+                self.save_html_content()
 
     def _fetch_data_from_pattern(self, pattern, html, err_code, err_msg):
         """Get data from HTML content given a pattern"""
@@ -225,6 +231,8 @@ class Video:
         # Set a default title if everything above failed
         if self.title is None:
             self.title = "Unknown"
+            # Se success flag to False
+            self.process_success = False
 
     def fetch_views(self, pattern=None):
         """ Function:
@@ -263,6 +271,8 @@ class Video:
         # Set a default value if everything above failed
         if self.views == None:
             self.views = 0
+            # Se success flag to False
+            self.process_success = False
         else:
             self.views = int(self.views)
 
@@ -333,6 +343,8 @@ class Video:
         # Set a default value if everything above failed
         if self.publish_date is None:
             self.publish_date = "00/00/00"
+            # Se success flag to False
+            self.process_success = False
         else:
             try:
                 # Convierte la cadena a un objeto datetime
@@ -389,6 +401,8 @@ class Video:
         # Set a default value if everything above failed
         if self.likes is None:
             self.likes = 0
+            # Set success flag to False
+            self.process_success = False
         else:
             self.likes = int(self.likes)
 
@@ -421,6 +435,8 @@ class Video:
         # Set a default value if everything above failed
         if self.length is None:
             self.length = '00:00:00'
+            # Se success flag to False
+            self.process_success = False
 
     def fetch_video_tags(self, pattern=None):
         """ Function:
@@ -469,6 +485,8 @@ class Video:
         # Set a default value if everything above failed
         if self.tags is None:
             self.tags = "None"
+            # Se success flag to False
+            self.process_success = False
 
     def get_video_comments_count(self, pattern=None):
         """ Function:

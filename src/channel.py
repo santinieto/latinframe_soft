@@ -301,12 +301,6 @@ class Channel:
             # Close pool
             pool.close()
             pool.join()
-
-            # Save scraps
-            pool = multiprocessing.Pool(processes=nthreads)
-            pool.map(Video.save_html_content, self.videos)
-            pool.close()
-            pool.join()
         else:
             pass
             # videosDicc = processVideos(recentVideos, channelName, channelID, verbose=False)
