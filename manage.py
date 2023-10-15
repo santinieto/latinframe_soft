@@ -147,6 +147,39 @@ if __name__ == '__main__':
                ):
                 execute_scrap()
 
+        if arg == '-sql':
+            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
+
+            # Obtengo el mensaje de ayuda
+            if subarg_1 == '-help':
+                print('Usage:')
+                print(f'python {script_name} {arg} []')
+                print( '\t "query" : Execute the given query')
+
+            else:
+                query = subarg_1
+
+                # Abro la conexion con la base de datos
+                with Database() as db:
+                    # Obtengo la primer palabra
+                    fw = query.split()[0].lower()
+
+                    # Si es un SELECT tengo que mostrar los resultados
+                    # Ejemplo:
+                    # python manage.py -sql "SELECT CHANNEL_ID FROM CHANNEL"
+                    # python manage.py -sql "SELECT * FROM CHANNEL"
+                    # python manage.py -sql "select * from channel"
+                    if fw == 'select':
+                        results = db.select(query, ())
+                        for result in results:
+                            print(result)
+                    # Si es otro tipo de consulta la ejecuto directamente
+                    # Ejemplo
+                    # python manage.py -sql "update channel set channel_name = 'toycantando_edit' where channel_id = 'UC2xjgvWb9cx5F637XjsUNxw'"
+                    # python manage.py -sql "update channel set channel_name = 'toycantando' where channel_id = 'UC2xjgvWb9cx5F637XjsUNxw'"
+                    else:
+                        db.exec(query)
+
         if arg == '-fetch':
             execute_db_fetch()
 
