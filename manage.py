@@ -69,6 +69,18 @@ if __name__ == '__main__':
                 if subarg_3 == '-save_html':
                     video.save_html_content()
 
+            # Obtengo la informacion de un canal unico
+            if subarg_1 == '-channel':
+                if '.com' in subarg_2:
+                    channel = yt.scrap_channel_w_url(subarg_2)
+                else:
+                    channel = yt.scrap_channel_w_id(subarg_2)
+                channel.fetch_channel_data()
+
+                # Guardo el contenido HTML si fuera necesario
+                if subarg_3 == '-save_html':
+                    channel.save_html_content()
+
             # Ejecuto todo el scraper
             if ((subarg_1 == '-all') or
                 (subarg_1 is None and subarg_2 is None)

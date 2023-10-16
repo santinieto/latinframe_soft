@@ -29,6 +29,23 @@ def scrap_video_w_id(id):
     """
     return Video(id=id, en_html_save=False)
 
+def scrap_channel_w_url(url):
+    """
+    Obtengo la informacion de un Canal de Youtube tomando como entrada una ID
+    Ejemplo:
+    $ python manage.py -runscrap -channel "https://www.youtube.com/@elxokas" -save_html
+    """
+    html_content = getHTTPResponse(url, responseType = 'text')
+    return Channel(html_content=html_content)
+
+def scrap_channel_w_id(id):
+    """
+    Obtengo la informacion de un Canal de Youtube tomando como entrada una ID
+    Ejemplo:
+    $ python manage.py -runscrap -channel UC9c4rND1mNP-XrWQjbFxp8g -save_html
+    """
+    return Channel(id=id)
+
 def scrap_youtube():
     """
     Ejemplo:
