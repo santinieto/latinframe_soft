@@ -208,6 +208,10 @@ class Database:
                 query = f"SELECT * FROM VIDEO WHERE VIDEO_ID LIKE '%{val}%'"
             elif sel == '-name':
                 query = f"SELECT * FROM VIDEO WHERE VIDEO_NAME LIKE '%{val}%'"
+            elif sel == '-channelid':
+                query = f"SELECT * FROM VIDEO WHERE CHANNEL_ID LIKE '%{val}%'"
+            elif sel == '-channelname':
+                query = f"SELECT * FROM VIDEO WHERE CHANNEL_ID = (SELECT CHANNEL_ID FROM CHANNEL WHERE CHANNEL_NAME LIKE '%{val}%')"
         elif type == '-channel':
             if sel == '-id':
                 query = f"SELECT * FROM CHANNEL WHERE CHANNEL_ID LIKE '%{val}%'"
