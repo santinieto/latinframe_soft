@@ -10,29 +10,30 @@ from src.utils import get_formatted_date
 def youtube_db_fetch():
     current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    # Get current directory
+    # Obtengo el directorio actual
     home = os.getcwd()
 
-    # Set environment variables
+    # Seteo variables de entorno
     os.environ["SOFT_UTILS"] = os.path.join(home, 'utils')
 
-    # Load channels from CSV
+    # Obtengo la lista de canales que esta en el .csv
     utils_path = os.environ.get("SOFT_UTILS")
     csv_path = os.path.join(utils_path, "Youtube_channelIDs.csv")
     channels_df = pd.read_csv(csv_path).dropna().dropna(axis=1)
     csv_ids = channels_df['channelID'].to_list()
 
-    # Get channel IDs from DB
+    # Abro la conexion con la base datos
     with Database() as db:
-        db_ids = db.get_youtube_channel_ids()
+        # Obtengo todos los IDs presentes en la base de datos
+        db_channel_ids = db.get_youtube_channel_ids(table_name = 'CHANNEL')
+        db_channel_records_ids = db.get_youtube_channel_ids(table_name = 'CHANNEL_RECORDS')
+        db_video_ids = db.get_youtube_channel_ids(table_name = 'VIDEO')
 
-        # Combine lists
-        total_id_list = list(set(csv_ids + db_ids))
+        # Combino todas las listas y me quedo con los que no esten en la tabla CHANNEL
+        total_id_list = list(set(csv_ids + db_channel_ids + db_channel_records_ids + db_video_ids))
+        to_add_list = [x for x in total_id_list if x not in db_channel_ids]
 
-        # Get list of IDs that are not in DB
-        to_add_list = [x for x in total_id_list if x not in db_ids]
-
-        # Add record to DB
+        # Agrego los canales faltantes
         for to_add_id in to_add_list:
             cprint(f'Adding {to_add_id} to DB.[CHANNEL]')
             query = '''

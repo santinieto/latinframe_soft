@@ -81,6 +81,8 @@ class Video:
 
         ans  = f"\t- Video ID: {self.id}\n"
         ans += f"\t- Video name: {self.title}\n"
+        ans += f"\t- Channel ID: {self.channel_id}\n"
+        ans += f"\t- Channel name: {self.channel_name}\n"
         ans += f"\t- Video views: {self.views}\n"
         ans += f"\t- Video likes: {self.likes}\n"
         ans += f"\t- Video length: {self.length}\n"
@@ -120,6 +122,42 @@ class Video:
 
         # Aca deberia haber otro intento de procesamiento
         if self.id is None:
+            # Bajo la bandera de analisis correcto
+            self.process_success = False
+
+    def get_channel_id(self, pattern=None):
+        """Get the Channel ID for the video from the HTML content"""
+
+        # If a custom pattern is given, use it, if not use a default one
+        pattern = r'"channelId":"(.*?)"' if pattern is None else pattern
+
+        # Get the required information using the classic method
+        err_code = '0018'
+        err_msg = f'Could not fetch Channel ID for video. Pattern {pattern}'
+        self.channel_id = self._fetch_data_from_pattern(
+            pattern, self.html_content, err_code, err_msg
+        )
+
+        # Aca deberia haber otro intento de procesamiento
+        if self.channel_id is None:
+            # Bajo la bandera de analisis correcto
+            self.process_success = False
+
+    def get_channel_name(self, pattern=None):
+        """Get the Channel name for the video from the HTML content"""
+
+        # If a custom pattern is given, use it, if not use a default one
+        pattern = r'"ownerChannelName":"(.*?)"' if pattern is None else pattern
+
+        # Get the required information using the classic method
+        err_code = '0019'
+        err_msg = f'Could not fetch Channel name for video. Pattern {pattern}'
+        self.channel_name = self._fetch_data_from_pattern(
+            pattern, self.html_content, err_code, err_msg
+        )
+
+        # Aca deberia haber otro intento de procesamiento
+        if self.channel_name is None:
             # Bajo la bandera de analisis correcto
             self.process_success = False
 
@@ -180,6 +218,8 @@ class Video:
             self.fetch_video_length()
             self.fetch_video_tags()
             self.get_video_comments_count()
+            self.get_channel_id()
+            self.get_channel_name()
 
             # Debug
             if self.debug is True:
