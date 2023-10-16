@@ -200,7 +200,7 @@ class Database:
         db_ids = [item[0] for item in db_ids]
         return db_ids
 
-    def get_data(self, op='select', type=None, sel='-name', val='elxokas'):
+    def process_data(self, op='select', type=None, sel='-name', val='elxokas'):
 
         # Defino la consulta
         if type == '-video':

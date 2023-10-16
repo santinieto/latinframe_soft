@@ -130,10 +130,10 @@ if __name__ == '__main__':
 
             if subarg_1 == '-get':
                 with Database() as db:
-                    db.get_data(op='select',type=subarg_2, sel=subarg_3, val=subarg_4)
+                    db.process_data(op='select',type=subarg_2, sel=subarg_3, val=subarg_4)
             elif subarg_1 == '-del':
                 with Database() as db:
-                    db.get_data(op='del',type=subarg_2, sel=subarg_3, val=subarg_4)
+                    db.process_data(op='del',type=subarg_2, sel=subarg_3, val=subarg_4)
 
         if arg == '-fetch':
             print('Fetching DB...')
