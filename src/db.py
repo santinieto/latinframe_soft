@@ -200,6 +200,44 @@ class Database:
         db_ids = [item[0] for item in db_ids]
         return db_ids
 
+    def process_data(self, op='select', type=None, sel='-name', val='elxokas'):
+
+        # Defino la consulta
+        if type == '-video':
+            if sel == '-id':
+                query = f"SELECT * FROM VIDEO WHERE VIDEO_ID LIKE '%{val}%'"
+            elif sel == '-name':
+                query = f"SELECT * FROM VIDEO WHERE VIDEO_NAME LIKE '%{val}%'"
+        elif type == '-channel':
+            if sel == '-id':
+                query = f"SELECT * FROM CHANNEL WHERE CHANNEL_ID LIKE '%{val}%'"
+            elif sel == '-name':
+                query = f"SELECT * FROM CHANNEL WHERE CHANNEL_NAME LIKE '%{val}%'"
+
+        # Muestro datos por pantalla
+        print('\nExecuted query:\n')
+        print(query)
+        print()
+        print('Results:')
+
+        # Obtengo los restulados
+        results = self.select(query, ())
+        if ((results is None) or (results == [])):
+            print('No results.')
+            return
+        else:
+            for kk, result in enumerate(results):
+                print(f'{kk}: {result}')
+
+        if op == 'del':
+            ans = None
+            while ans not in ['y', 'n']:
+                ans = input('\nWARNING! You are about to delete the results above\nContinue? (y/n): ').lower()
+            if ans == 'y':
+                del_query = query.replace('SELECT *', 'DELETE')
+                results = self.select(del_query, ())
+                print('Results deleted.')
+
 if __name__ == '__main__':
     db = Database()
 
