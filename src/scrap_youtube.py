@@ -15,8 +15,10 @@ def scrap_youtube_help(script_name, arg):
 def scrap_video_w_url(url):
     """
     Obtengo la informacion de un video de Youtube tomando como entrada una URL
-    Ejemplo:
+    Ejemplos:
     $ python manage.py -runscrap -video "https://www.youtube.com/watch?v=55O5Gnwbp14&ab_channel=Acre" -save_html
+    $ python manage.py -runscrap -video "https://www.youtube.com/watch?v=UAba5-enGOk&ab_channel=JUJALAG" -save_html -add
+    $ python manage.py -runscrap -video "https://www.youtube.com/watch?v=GgjrAJQmMVA&ab_channel=RubiusZ" -add
     """
     html_content = getHTTPResponse(url, responseType = 'text')
     return Video(html_content=html_content)
@@ -42,7 +44,8 @@ def scrap_channel_w_id(id):
     """
     Obtengo la informacion de un Canal de Youtube tomando como entrada una ID
     Ejemplo:
-    $ python manage.py -runscrap -channel UC9c4rND1mNP-XrWQjbFxp8g -save_html
+    $ python manage.py -runscrap -channel UC9c4rND1mNP-XrWQjbFxp8g -save_html -add
+    $ python manage.py -runscrap -channel UCFzGNDHEZ5-7d5UXxfHUcRg -save_html -add
     """
     return Channel(id=id)
 

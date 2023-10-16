@@ -53,6 +53,7 @@ if __name__ == '__main__':
             subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
             subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
             subarg_3 = args[kk + 4] if kk + 4 < len(args) else None
+            subarg_4 = args[kk + 5] if kk + 5 < len(args) else None
 
             # Obtengo el mensaje de ayuda
             if subarg_1 == '-help':
@@ -66,8 +67,17 @@ if __name__ == '__main__':
                     video = yt.scrap_video_w_id(subarg_2)
 
                 # Guardo el contenido HTML si fuera necesario
-                if subarg_3 == '-save_html':
+                if ((subarg_3 == '-save_html') or
+                    (subarg_4 == '-save_html')
+                ):
                     video.save_html_content()
+
+                # Agrego el registro a la base de datos si es requerido
+                if ((subarg_3 == '-add') or
+                    (subarg_4 == '-add')
+                ):
+                    with Database() as db:
+                        db.insert_video_record(video.to_dicc())
 
             # Obtengo la informacion de un canal unico
             if subarg_1 == '-channel':
@@ -80,6 +90,13 @@ if __name__ == '__main__':
                 # Guardo el contenido HTML si fuera necesario
                 if subarg_3 == '-save_html':
                     channel.save_html_content()
+
+                # Agrego el registro a la base de datos si es requerido
+                if ((subarg_3 == '-add') or
+                    (subarg_4 == '-add')
+                ):
+                    with Database() as db:
+                        db.insert_channel_record(channel.to_dicc())
 
             # Ejecuto todo el scraper
             if ((subarg_1 == '-all') or

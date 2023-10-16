@@ -194,8 +194,8 @@ class Database:
     #############################################################
     # Especific functions
     #############################################################
-    def get_youtube_channel_ids(self):
-        query = 'SELECT CHANNEL_ID FROM CHANNEL'
+    def get_youtube_channel_ids(self, table_name = 'CHANNEL'):
+        query = f'SELECT DISTINCT CHANNEL_ID FROM {table_name}'
         db_ids = self.select(query, ())
         db_ids = [item[0] for item in db_ids]
         return db_ids
