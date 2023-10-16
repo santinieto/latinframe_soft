@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
             # Imprimo el mensaje de ayuda
             if subarg_1 == '-h':
-                print('Help')
+                t.help(script_name, arg)
 
             # Listo los tests y puedo aplicar un filtro si quiero
             if subarg_1 == '-l':
@@ -44,7 +44,9 @@ if __name__ == '__main__':
 
             # Ejecuto alguno de los tests
             if subarg_1 == '-r':
-                t.run(int(subarg_2))
+                test_list = subarg_2.split('-')
+                for test in test_list:
+                    t.run(int(test))
 
         # Ejecuto el scraping
         if arg == '-runscrap':

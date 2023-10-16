@@ -42,3 +42,11 @@ class Test():
             if test[0] == sel:
                 cmd = f'Command: python -m unittest {test[1]}'
                 result = runner.run(test[2])
+
+    def help(self, script_name, arg):
+        print('Usage:')
+        print(f'python {script_name} {arg} []')
+        print( '\t -h : Get this help message')
+        print( '\t -l : List tests')
+        print( '\t\t -"pattern" : Apply a filter to tests (optional)')
+        print(f'\t -r : Run a single test (separated with -). Ex: python {script_name} {arg} -r 1-2')
