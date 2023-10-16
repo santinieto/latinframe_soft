@@ -122,6 +122,19 @@ if __name__ == '__main__':
             else:
                 sql.sql_execute(subarg_1)
 
+        if arg == '-db':
+            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
+            subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
+            subarg_3 = args[kk + 4] if kk + 4 < len(args) else None
+            subarg_4 = args[kk + 5] if kk + 5 < len(args) else None
+
+            if subarg_1 == '-get':
+                with Database() as db:
+                    db.get_data(op='select',type=subarg_2, sel=subarg_3, val=subarg_4)
+            elif subarg_1 == '-del':
+                with Database() as db:
+                    db.get_data(op='del',type=subarg_2, sel=subarg_3, val=subarg_4)
+
         if arg == '-fetch':
             print('Fetching DB...')
             dbf.youtube_db_fetch()
