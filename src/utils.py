@@ -169,10 +169,13 @@ def getDateFromFilename(filename):
     else:
         return ('00000000', '000000')
 
-def o_fmt_error(error_code, error_message, file_name):
+def o_fmt_error(error_code=None, error_message=None, file_name=None):
     # Get current date
     import datetime
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Si no se provee un codigo o un mensaje de error abortar escritura
+    if((error_code is None) or (error_message is None)):
+        return
     # Open error log file
     filepath = os.environ.get("SOFT_LOGS")
     filename = filepath + "/error_log.txt"
