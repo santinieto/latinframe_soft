@@ -1,21 +1,13 @@
 # Libraries from Python
 import sys
-import unittest
 
 # My modules
 from src.db import Database
+from src.test import Test
 import src.scrap_youtube as yt
 import src.sql as sql
 import src.db_fetch as dbf
 import src.environment as env
-
-# Functions
-def execute_tests():
-    loader = unittest.TestLoader()
-    suite = loader.discover(start_dir='./tests/', pattern='test_*.py')
-    # suite = loader.discover(start_dir='./tests/', pattern='test_channel.py')
-    runner = unittest.TextTestRunner()
-    result = runner.run(suite)
 
 # Funcion principal del programa
 if __name__ == '__main__':
@@ -32,8 +24,29 @@ if __name__ == '__main__':
     for kk, arg in enumerate(args[1:]):
 
         # Ejecuto los tests de los modulos
-        if arg == '-runtest':
-            execute_tests()
+        if arg == '-test':
+            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
+            subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
+
+            # Armo la lista de tests disponibles
+            t = Test(start_dir='./tests/')
+            t.get_suite(pattern='test_*.py')
+            t.generate_test_list()
+
+            # Imprimo el mensaje de ayuda
+            if subarg_1 == '-h':
+                t.help(script_name, arg)
+
+            # Listo los tests y puedo aplicar un filtro si quiero
+            if subarg_1 == '-l':
+                pattern = None if subarg_2 is None else subarg_2
+                t.show_test_list(pattern = pattern)
+
+            # Ejecuto alguno de los tests
+            if subarg_1 == '-r':
+                test_list = subarg_2.split('-')
+                for test in test_list:
+                    t.run(int(test))
 
         # Ejecuto el scraping
         if arg == '-runscrap':
