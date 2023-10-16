@@ -2,7 +2,7 @@ import unittest
 from src.channel import Channel
 from src.db import Database
 
-class TestVideo(unittest.TestCase):
+class TestChannel(unittest.TestCase):
 
     def test_create_channel_object(self):
         try:
