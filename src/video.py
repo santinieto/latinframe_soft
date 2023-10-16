@@ -308,9 +308,13 @@ class Video:
         # If a custom pattern is given, use it, if not use a default one
         pattern = r'"decorationTimeMillis":(.*?),' if pattern is None else pattern
 
-        # Try to get data using the pattern given
-        err_code = '0006'
-        err_msg = f'Could not fetch most viewed moment for video {self.id} for pattern {pattern}'
+
+        # Intento obtener el dato solicitado a partir de un patron
+        # En el caso del conteo de comentarios, dado que algunos videos
+        # no los tienen habilitados, no vamos a considerar error no
+        # encontrarlos
+        err_code = None
+        err_msg = None
         miliseconds = self._fetch_data_from_pattern(
             pattern, self.html_content, err_code, err_msg
         )
@@ -521,9 +525,12 @@ class Video:
         # If a custom pattern is given, use it, if not use a default one
         pattern = r'"commentCount":[ ]*\{(.*?)\}' if pattern is None else pattern
 
-        # Try to get data using the pattern given
-        err_code = '0014'
-        err_msg = f'Could not fetch video comments count for video {self.id} for pattern {pattern}'
+        # Intento obtener el dato solicitado a partir de un patron
+        # En el caso del conteo de comentarios, dado que algunos videos
+        # no los tienen habilitados, no vamos a considerar error no
+        # encontrarlos
+        err_code = None
+        err_msg = None
         comments_str = self._fetch_data_from_pattern(
             pattern, self.html_content, err_code, err_msg
         )
@@ -533,8 +540,8 @@ class Video:
                 self.comments_cnt = re.search(r'"\w+":"(\d+)"', comments_str).group(1)
                 self.comments_cnt = int(self.comments_cnt)
             except:
-                err_code = '0016'
-                err_msg = f'Could not fetch video comments count for video {self.id} for pattern "\w+":"(\d+)"'
+                err_code = None
+                err_msg = None
                 o_fmt_error(err_code, err_msg, 'Class__Video')
 
         # Set a default value if everything above failed
