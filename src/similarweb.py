@@ -1,13 +1,10 @@
 from bs4 import BeautifulSoup
+from driver import Driver
 
-# BASE_URL = 'https://www.similarweb.com/'
-# TOP_URL = 'top-websites/'
-# ARTS_URL = 'arts-and-entertainment/'
-
-def get_similarweb_table(filepath=''):
+def get_similarweb_table(filename=''):
 
     # Abro el archivo
-    with open(filepath, 'r', encoding="utf-8") as file:
+    with open(filename, 'r', encoding="utf-8") as file:
         page = BeautifulSoup(file, 'html.parser')
 
     # Encuentro las filas de la tabla
@@ -31,12 +28,12 @@ def get_similarweb_table(filepath=''):
 
     return data_list
 
-def get_similarweb_web_info(filepath='scraped_page.html'):
+def get_similarweb_web_info(filename='scraped_page.html'):
 
     #########################################
     # Abro el archivo
     #########################################
-    with open(filepath, 'r', encoding="utf-8") as file:
+    with open(filename, 'r', encoding="utf-8") as file:
         page = BeautifulSoup(file, 'html.parser')
 
     #########################################
@@ -81,9 +78,41 @@ def get_similarweb_web_info(filepath='scraped_page.html'):
 
     return web_data
 
-if __name__ == '__main__':
-    data = get_similarweb_table('scraped_page.html')
-    print(data)
+def get_similarweb_url_list_fromtable(data_list):
 
-    data = get_similarweb_web_info('scraped_page.html')
-    print(data)
+    url_list = []
+    for data in data_list:
+        url_list.append(
+            (BASE_URL + f"website/{data['domain']}/", data['domain'].replace('.','_'))
+        )
+
+    return url_list
+
+if __name__ == '__main__':
+    # Defino la URL base
+    BASE_URL = 'https://www.similarweb.com/'
+
+    # Creo el objeto de tipo driver
+    # driver = Driver(browser="chrome")
+
+    # # Obtengo la informacion de las webs mas vistas
+    # filename = driver.scrap_url(BASE_URL + "top-websites/", 'top_websites', delay=20)
+
+    # Obtengo la lista de paginas mas vistas
+    try:
+        data_list = get_similarweb_table(filename=filename)
+    except:
+        data_list = get_similarweb_table(filename='html_top_websites.dat')
+
+    url_list = get_similarweb_url_list_fromtable(data_list)
+
+    # # Obtengo el codigo HTML para esas paginas
+    # driver.scrap_url_list(url_list, delay=20)
+
+    # # Cierro la pagina
+    # driver.close_driver()
+
+    for url in url_list:
+        filename = f'html_{url[1]}.dat'
+        web_info = get_similarweb_web_info(filename=filename)
+        print(web_info)
