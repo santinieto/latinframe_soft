@@ -1,5 +1,10 @@
 from bs4 import BeautifulSoup
-from driver import Driver
+try:
+    from src.driver import Driver
+    from src.db import Database
+except:
+    from driver import Driver
+    from db import Database
 
 def get_similarweb_table(filename=''):
 
@@ -37,6 +42,11 @@ def get_similarweb_web_info(filename='scraped_page.html'):
         page = BeautifulSoup(file, 'html.parser')
 
     #########################################
+    # Obtengo el dominio
+    #########################################
+    domain = page.find('p', class_='wa-overview__title').text
+
+    #########################################
     # Analizo la informacion de rankeo
     #########################################
     # Obtengo el cuadro de encabezado
@@ -46,9 +56,9 @@ def get_similarweb_web_info(filename='scraped_page.html'):
     country_box = rank_header.find('div', class_='wa-rank-list__item wa-rank-list__item--country')
     category_box = rank_header.find('div', class_='wa-rank-list__item wa-rank-list__item--category')
     # Obtengo los valores de las cajas
-    global_rank = global_box.find('p', class_='wa-rank-list__value').text
-    country_rank = country_box.find('p', class_='wa-rank-list__value').text
-    category_rank = category_box.find('p', class_='wa-rank-list__value').text
+    global_rank = int(global_box.find('p', class_='wa-rank-list__value').text.replace('#',''))
+    country_rank = int(country_box.find('p', class_='wa-rank-list__value').text.replace('#',''))
+    category_rank = int(category_box.find('p', class_='wa-rank-list__value').text.replace('#',''))
 
     #########################################
     # Analizo la informacion de rankeo
@@ -59,7 +69,8 @@ def get_similarweb_web_info(filename='scraped_page.html'):
     engagement_elements = engagement_box.find_all('div', class_='engagement-list__item')
     # Para cada elemento, obtengo el dato asociado
     total_visits = engagement_elements[0].find('p', class_='engagement-list__item-value').text
-    bounce_rate = engagement_elements[1].find('p', class_='engagement-list__item-value').text
+    bounce_rate = engagement_elements[1].find('p', class_='engagement-list__item-value').text.replace('%','')
+    bounce_rate = round(float(bounce_rate)/100.0, 2)
     pages_per_visit = engagement_elements[2].find('p', class_='engagement-list__item-value').text
     avg_duration_visit = engagement_elements[3].find('p', class_='engagement-list__item-value').text
 
@@ -67,6 +78,7 @@ def get_similarweb_web_info(filename='scraped_page.html'):
     # Armo el diccionario de datos
     #########################################
     web_data = {
+        'domain': domain,
         'global_rank': global_rank,
         'country_rank': country_rank,
         'category_rank': category_rank,
@@ -112,7 +124,20 @@ if __name__ == '__main__':
     # # Cierro la pagina
     # driver.close_driver()
 
-    for url in url_list:
-        filename = f'html_{url[1]}.dat'
-        web_info = get_similarweb_web_info(filename=filename)
-        print(web_info)
+    # Abro la conexion con la base de datos:
+    with Database() as db:
+
+        # Recorro la lista de URLs
+        for url in url_list:
+
+            # Armo el nombre del archivo a leer
+            filename = f'html_{url[1]}.dat'
+
+            # Obtengo la informacion a partir del contenido HTML
+            web_info = get_similarweb_web_info(filename=filename)
+
+            # Muestro el diccionario en pantalla
+            print(web_info)
+
+            # Agrego el registro a la tabla
+            db.insert_similarweb_record(web_info)
