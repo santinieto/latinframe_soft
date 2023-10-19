@@ -1,28 +1,28 @@
 import unittest
-from src.channel import Channel
+from src.youtube import YoutubeChannel
 from src.db import Database
 
 class TestChannel(unittest.TestCase):
 
     def test_create_channel_object(self):
         try:
-            channel_obj = Channel()
+            channel_obj = YoutubeChannel()
         except Exception as e:
             self.fail(f"Could not create Channel object.\n\tError value: {str(e)}")
 
     def test_channel_1(self):
-        channel = Channel(id='UCK1i2UviaXLUNrZlAFpw_jA')
+        channel = YoutubeChannel(id='UCK1i2UviaXLUNrZlAFpw_jA')
         channel.fetch_channel_data()
         channel.fetch_videos_data()
         print(str(channel))
 
     def test_channel_2(self):
-        channel = Channel(id='UCu60hbJGH8nlCSFwfVe_wwA')
+        channel = YoutubeChannel(id='UCu60hbJGH8nlCSFwfVe_wwA')
         channel.fetch_channel_data()
         print(str(channel))
 
     def test_channel_load_videos_ids(self):
-        channel = Channel(id='UCu60hbJGH8nlCSFwfVe_wwA')
+        channel = YoutubeChannel(id='UCu60hbJGH8nlCSFwfVe_wwA')
         channel.fetch_channel_data()
 
         # Get channel videos ID from DB
