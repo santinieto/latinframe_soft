@@ -1,7 +1,10 @@
 import sqlite3
 import datetime
 import csv
-from src.utils import o_fmt_error
+try:
+    from src.utils import o_fmt_error
+except:
+    from utils import o_fmt_error
 
 class Database:
 
@@ -14,6 +17,7 @@ class Database:
         # Create tables
         self.create_video_tables()
         self.create_channel_tables()
+        self.create_similarweb_tables()
 
     def __enter__(self):
         self.conn = sqlite3.connect(self.db_name)
@@ -157,6 +161,40 @@ class Database:
         params = (
             channel_info['channelID'], channel_info['nVideos'], channel_info['subscribers'], channel_info['views'],
             channel_info['monthly_subs'], channel_info['daily_subs'],
+            current_time
+        )
+        self.exec(query, params)
+
+    def create_similarweb_tables(self):
+        query = '''
+        CREATE TABLE IF NOT EXISTS SIMILARWEB_RECORDS (
+            RECORD_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            DOMAIN TEXT,
+            GLOBAL_RANK INTEGER,
+            COUNTRY_RANK INTEGER,
+            CATEGORY_RANK INTEGER,
+            TOTAL_VISITS TEXT,
+            BOUNCE_RATE INTEGER,
+            PAGES_PER_VISIT NUMBER,
+            AVG_DURATION_VISIT TEXT,
+            UPDATE_DATE DATE
+        )
+        '''
+        self.exec(query)
+
+    def insert_similarweb_record(self, data):
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        query = '''
+        INSERT OR REPLACE INTO SIMILARWEB_RECORDS (
+            DOMAIN, GLOBAL_RANK, COUNTRY_RANK, CATEGORY_RANK, TOTAL_VISITS, BOUNCE_RATE, PAGES_PER_VISIT, AVG_DURATION_VISIT, UPDATE_DATE
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        '''
+        params = (
+            data['domain'],
+            data['global_rank'], data['country_rank'], data['category_rank'],
+            data['total_visits'], data['bounce_rate'], data['pages_per_visit'],
+            data['avg_duration_visit'],
             current_time
         )
         self.exec(query, params)
