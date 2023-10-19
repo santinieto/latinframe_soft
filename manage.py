@@ -4,7 +4,7 @@ import sys
 # My modules
 from src.db import Database
 from src.test import Test
-import src.scrap_youtube as yt
+import src.youtube_scrap as yt
 import src.sql as sql
 import src.db_fetch as dbf
 import src.environment as env
