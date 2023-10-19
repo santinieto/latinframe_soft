@@ -9,86 +9,8 @@ except:
 # Defino la URL base
 SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
 
-def get_similarweb_table(filename=''):
-
-    # Abro el archivo
-    with open(filename, 'r', encoding="utf-8") as file:
-        page = BeautifulSoup(file, 'html.parser')
-
-    # Encuentro las filas de la tabla
-    rows = page.find_all('tr', class_='top-table__row')
-
-    # Lista para almacenar los diccionarios de datos
-    data_list = []
-
-    # Para cada fila obtengo los datos
-    for row in rows:
-        row_dicc = {
-            'rank': row.find('span', class_='tw-table__rank').text,
-            'domain': row.find('span', class_='tw-table__domain').text,
-            'category': row.find('a', class_='tw-table__category').text,
-            'avg_visit_duration': row.find('span', class_='tw-table__avg-visit-duration').text,
-            'pages_per_visit': row.find('span', class_='tw-table__pages-per-visit').text,
-            'bounce_rate': row.find('span', class_='tw-table__bounce-rate').text,
-        }
-
-        data_list.append(row_dicc)  # Agregar el diccionario a la lista
-
-    return data_list
-
-def get_similarweb_url_list_fromtable(data_list):
-
-    url_list = []
-    for data in data_list:
-        url_list.append(
-            (SIMILARWEB_BASE_URL + f"website/{data['domain']}/", data['domain'].replace('.','_'))
-        )
-
-    return url_list
-
-def similarweb_main():
-
-    # # Creo el objeto de tipo driver
-    # driver = Driver(browser="chrome")
-
-    # # Obtengo la informacion de las webs mas vistas
-    # filename = driver.scrap_url(SIMILARWEB_BASE_URL + "top-websites/", 'top_websites', delay=20)
-
-    # Obtengo la lista de paginas mas vistas
-    try:
-        data_list = get_similarweb_table(filename=filename)
-    except:
-        data_list = get_similarweb_table(filename='html_top_websites.dat')
-
-    url_list = get_similarweb_url_list_fromtable(data_list)
-
-    # # Obtengo el codigo HTML para esas paginas
-    # driver.scrap_url_list(url_list, delay=20)
-
-    # # Cierro la pagina
-    # driver.close_driver()
-
-    # Abro la conexion con la base de datos:
-    with Database() as db:
-
-        # Recorro la lista de URLs
-        for url in url_list:
-
-            # Armo el nombre del archivo a leer
-            filename = f'html_{url[1]}.dat'
-
-            # Obtengo la informacion a partir del contenido HTML
-            web_info = SimilarWebWebsite(filename=filename)
-            web_info.fetch_data()
-
-            # Muestro el diccionario en pantalla
-            print(web_info.to_dicc())
-
-            # Agrego el registro a la tabla
-            db.insert_similarweb_record(web_info.to_dicc())
-
 class SimilarWebTopWebsitesTable():
-    def __init__(self, domain='top-websites/', filename=None):
+    def __init__(self, domain='top-websites/', filename='html_top_websites.dat'):
         self.base_url = 'https://www.similarweb.com/'
         self.domain = domain
         self.row_data = []
@@ -214,6 +136,44 @@ class SimilarWebWebsite:
         self.bounce_rate = round(float(self.bounce_rate)/100.0, 2)
         self.pages_per_visit = engagement_elements[2].find('p', class_='engagement-list__item-value').text
         self.avg_duration_visit = engagement_elements[3].find('p', class_='engagement-list__item-value').text
+
+def similarweb_main():
+
+    # # Creo el objeto de tipo driver
+    # driver = Driver(browser="chrome")
+
+    # # Obtengo la informacion de las webs mas vistas
+    # filename = driver.scrap_url(SIMILARWEB_BASE_URL + "top-websites/", 'top_websites', delay=20)
+
+    # Obtengo la lista de paginas mas vistas
+    table = SimilarWebTopWebsitesTable()
+    table.fetch_rows()
+    url_list = table.get_url_list()
+
+    # # Obtengo el codigo HTML para esas paginas
+    # driver.scrap_url_list(url_list, delay=20)
+
+    # # Cierro la pagina
+    # driver.close_driver()
+
+    # Abro la conexion con la base de datos:
+    with Database() as db:
+
+        # Recorro la lista de URLs
+        for url in url_list:
+
+            # Armo el nombre del archivo a leer
+            filename = f'html_{url[1]}.dat'
+
+            # Obtengo la informacion a partir del contenido HTML
+            web_info = SimilarWebWebsite(filename=filename)
+            web_info.fetch_data()
+
+            # Muestro el diccionario en pantalla
+            print(web_info.to_dicc())
+
+            # Agrego el registro a la tabla
+            db.insert_similarweb_record(web_info.to_dicc())
 
 if __name__ == '__main__':
     similarweb_main()
