@@ -1,20 +1,15 @@
 from bs4 import BeautifulSoup
 try:
-    from src.driver import Driver
     from src.db import Database
 except:
-    from driver import Driver
     from db import Database
 
-# Defino la URL base
-SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
-
 class SimilarWebTopWebsitesTable():
-    def __init__(self, domain='top-websites/', filename='html_top_websites.dat'):
+    def __init__(self, domain='top-websites/', filename='html_top_websites.dat', results_path='results/similarweb/'):
         self.base_url = 'https://www.similarweb.com/'
         self.domain = domain
         self.row_data = []
-
+        self.results_path = results_path
         self.html_content = ''
         self.filename = filename
         if self.filename is not None:
@@ -24,8 +19,8 @@ class SimilarWebTopWebsitesTable():
         self.html_content = html_content
 
     def set_html_content_fromfile(self, filename=None):
-        self.filename = filename
-        with open(filename, 'r', encoding="utf-8") as file:
+        self.filename = f'{self.results_path}/{filename}'
+        with open(self.filename, 'r', encoding="utf-8") as file:
             self.html_content = BeautifulSoup(file, 'html.parser')
 
     def fetch_rows(self):
@@ -59,9 +54,9 @@ class SimilarWebTopWebsitesTable():
         return self.url_list
 
 class SimilarWebWebsite:
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, results_path='results/similarweb/'):
         self.base_url = 'https://www.similarweb.com/website/'
-
+        self.results_path = results_path
         self.domain = ''
         self.global_rank = 0
         self.country_rank = 0
@@ -80,8 +75,8 @@ class SimilarWebWebsite:
         self.html_content = html_content
 
     def set_html_content_fromfile(self, filename=None):
-        self.filename = filename
-        with open(filename, 'r', encoding="utf-8") as file:
+        self.filename = f'{self.results_path}/{filename}'
+        with open(self.filename, 'r', encoding="utf-8") as file:
             self.html_content = BeautifulSoup(file, 'html.parser')
 
     def to_dicc(self):
@@ -137,24 +132,11 @@ class SimilarWebWebsite:
         self.pages_per_visit = engagement_elements[2].find('p', class_='engagement-list__item-value').text
         self.avg_duration_visit = engagement_elements[3].find('p', class_='engagement-list__item-value').text
 
-def similarweb_main():
-
-    # # Creo el objeto de tipo driver
-    # driver = Driver(browser="chrome")
-
-    # # Obtengo la informacion de las webs mas vistas
-    # filename = driver.scrap_url(SIMILARWEB_BASE_URL + "top-websites/", 'top_websites', delay=20)
-
+if __name__ == '__main__':
     # Obtengo la lista de paginas mas vistas
     table = SimilarWebTopWebsitesTable()
     table.fetch_rows()
     url_list = table.get_url_list()
-
-    # # Obtengo el codigo HTML para esas paginas
-    # driver.scrap_url_list(url_list, delay=20)
-
-    # # Cierro la pagina
-    # driver.close_driver()
 
     # Abro la conexion con la base de datos:
     with Database() as db:
@@ -174,6 +156,3 @@ def similarweb_main():
 
             # Agrego el registro a la tabla
             db.insert_similarweb_record(web_info.to_dicc())
-
-if __name__ == '__main__':
-    similarweb_main()

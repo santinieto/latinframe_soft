@@ -2,7 +2,7 @@ from selenium import webdriver
 import time
 
 class Driver:
-    def __init__(self, browser="chrome", driver_path=r'drivers/'):
+    def __init__(self, browser="chrome", driver_path=r'drivers/',results_path='results/similarweb/'):
         """
         Inicializa el objeto Driver con el navegador especificado (por defecto, Chrome).
 
@@ -12,6 +12,7 @@ class Driver:
 
         # Atributos
         self.driver_path = driver_path
+        self.results_path = results_path
         self.browser = browser
         self.html_content = ''
 
@@ -81,7 +82,7 @@ class Driver:
 
         try:
             # Guardo el contenido HTML
-            with open(filename, "w", encoding="utf-8") as file:
+            with open(f'{self.results_path}/{filename}', "w", encoding="utf-8") as file:
                 file.write(self.driver.page_source)
         except Exception as e:
             print(f"Error al intentar guardar contenido HTML en el archivo {filename}")
