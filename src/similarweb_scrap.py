@@ -15,6 +15,16 @@ except:
 
 import datetime
 
+def scrap_similarweb_help(script_name, arg):
+    print('Similarweb usage:')
+    print(f'python {script_name} {arg} -sw []')
+    print('\tNULL\tExecute general Similarweb scrap')
+    print('\t-help\tThis help message')
+    print('\t-add <domain>\tAdd web to DB for given domain')
+    print('\t-del []\tDelete records from database')
+    print('\t\t-id <domain_id>\tUsing an ID from database')
+    print('\t\t-domain <domain>\tUsing a domain from database')
+
 def generate_domain_id():
     with Database() as db:
         # Quiero obtener ahora el maximo valor de IDs

@@ -57,8 +57,12 @@ if __name__ == '__main__':
             subarg_4 = args[kk + 5] if kk + 5 < len(args) else None
 
             # Obtengo el mensaje de ayuda
-            if subarg_1 == '-help':
+            if subarg_1 in [
+                    '-h','-help',
+                    '--h','--help',
+                    ]:
                 yt.scrap_youtube_help(script_name, arg)
+                sw.scrap_similarweb_help(script_name, arg)
 
             # Obtengo la informacion de un video unico
             if subarg_1 == '-video':
@@ -106,8 +110,11 @@ if __name__ == '__main__':
             # Ejecuto el scrapper de SimilarWeb
             if subarg_1 == '-sw':
 
-                if subarg_2 == '-help':
-                    pass
+                if subarg_2 in [
+                    '-h','-help',
+                    '--h','--help',
+                    ]:
+                    sw.scrap_similarweb_help()
 
                 elif subarg_2 == '-add':
                     sw.add_web(subarg_3)
