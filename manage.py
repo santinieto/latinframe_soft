@@ -106,6 +106,9 @@ if __name__ == '__main__':
             # Ejecuto el scrapper de SimilarWeb
             if subarg_1 == '-sw':
 
+                if subarg_2 == '-help':
+                    pass
+
                 if subarg_2 == '-add':
                     pass
 
