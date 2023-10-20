@@ -5,6 +5,7 @@ import sys
 from src.db import Database
 from src.test import Test
 import src.youtube_scrap as yt
+import src.similarweb_scrap as sw
 import src.sql as sql
 import src.db_fetch as dbf
 import src.environment as env
@@ -49,7 +50,7 @@ if __name__ == '__main__':
                     t.run(int(test))
 
         # Ejecuto el scraping
-        if arg == '-runscrap':
+        if arg == '-scrap':
             subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
             subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
             subarg_3 = args[kk + 4] if kk + 4 < len(args) else None
@@ -98,11 +99,20 @@ if __name__ == '__main__':
                     with Database() as db:
                         db.insert_channel_record(channel.to_dicc())
 
+            # Ejecuto el scrapper de Youtube
+            if subarg_1 == '-yt':
+                yt.scrap_youtube()
+
+            # Ejecuto el scrapper de SimilarWeb
+            if subarg_1 == '-sw':
+                sw.scrap_similarweb()
+
             # Ejecuto todo el scraper
             if ((subarg_1 == '-all') or
                 (subarg_1 is None and subarg_2 is None)
                ):
                 yt.scrap_youtube()
+                sw.scrap_similarweb()
 
         if arg == '-sql':
             subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
