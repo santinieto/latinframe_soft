@@ -58,6 +58,7 @@ class Driver:
         Args:
             url (str): La URL de la página web a cargar.
         """
+        print(f'- Driver --> Obtaining HTML for URL {url}')
         try:
             self.driver.get(url)
         except Exception as e:
@@ -82,8 +83,10 @@ class Driver:
 
         try:
             # Guardo el contenido HTML
-            with open(f'{self.results_path}/{filename}', "w", encoding="utf-8") as file:
+            file_path = f'{self.results_path}/{filename}'
+            with open(file_path, "w", encoding="utf-8") as file:
                 file.write(self.driver.page_source)
+            print(f'\t- Driver --> HTML content saved into {file_path}')
         except Exception as e:
             print(f"Error al intentar guardar contenido HTML en el archivo {filename}")
             print(f"Codigo de error: {e}")

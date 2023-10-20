@@ -167,9 +167,24 @@ class Database:
 
     def create_similarweb_tables(self):
         query = '''
-        CREATE TABLE IF NOT EXISTS SIMILARWEB_RECORDS (
-            RECORD_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        CREATE TABLE IF NOT EXISTS SIMILARWEB_DOMAINS (
+            DOMAIN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
             DOMAIN TEXT,
+            COMPANY TEXT,
+            YEAR_FOUNDER INTEGER,
+            EMPLOYEES TEXT,
+            HQ TEXT,
+            ANNUAL_REVENUE TEXT,
+            INDUSTRY TEXT,
+            UPDATE_DATE DATE
+        )
+        '''
+        self.exec(query)
+
+        query = '''
+        CREATE TABLE IF NOT EXISTS SIMILARWEB_RECORDS (
+            RECORD_ID INTEGER PRIMARY KEY,
+            DOMAIN_ID INTEGER,
             GLOBAL_RANK INTEGER,
             COUNTRY_RANK INTEGER,
             CATEGORY_RANK INTEGER,
@@ -186,12 +201,25 @@ class Database:
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         query = '''
-        INSERT OR REPLACE INTO SIMILARWEB_RECORDS (
-            DOMAIN, GLOBAL_RANK, COUNTRY_RANK, CATEGORY_RANK, TOTAL_VISITS, BOUNCE_RATE, PAGES_PER_VISIT, AVG_DURATION_VISIT, UPDATE_DATE
+        INSERT OR REPLACE INTO SIMILARWEB_DOMAINS (
+            DOMAIN_ID, DOMAIN, COMPANY, YEAR_FOUNDER, EMPLOYEES, HQ, ANNUAL_REVENUE, INDUSTRY, UPDATE_DATE
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         params = (
-            data['domain'],
+            data['domain_id'], data['domain'],
+            data['company'], data['year_founder'], data['employees'],
+            data['hq'], data['annual_revenue'], data['industry'],
+            current_time
+        )
+        self.exec(query, params)
+
+        query = '''
+        INSERT OR REPLACE INTO SIMILARWEB_RECORDS (
+            DOMAIN_ID, GLOBAL_RANK, COUNTRY_RANK, CATEGORY_RANK, TOTAL_VISITS, BOUNCE_RATE, PAGES_PER_VISIT, AVG_DURATION_VISIT, UPDATE_DATE
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        '''
+        params = (
+            data['domain_id'],
             data['global_rank'], data['country_rank'], data['category_rank'],
             data['total_visits'], data['bounce_rate'], data['pages_per_visit'],
             data['avg_duration_visit'],
