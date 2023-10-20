@@ -219,7 +219,7 @@ class Database:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         params = (
-            1,
+            data['domain_id'],
             data['global_rank'], data['country_rank'], data['category_rank'],
             data['total_visits'], data['bounce_rate'], data['pages_per_visit'],
             data['avg_duration_visit'],
