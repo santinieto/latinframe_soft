@@ -202,11 +202,11 @@ class Database:
 
         query = '''
         INSERT OR REPLACE INTO SIMILARWEB_DOMAINS (
-            DOMAIN, COMPANY, YEAR_FOUNDER, EMPLOYEES, HQ, ANNUAL_REVENUE, INDUSTRY, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            DOMAIN_ID, DOMAIN, COMPANY, YEAR_FOUNDER, EMPLOYEES, HQ, ANNUAL_REVENUE, INDUSTRY, UPDATE_DATE
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         '''
         params = (
-            data['domain'],
+            data['domain_id'], data['domain'],
             data['company'], data['year_founder'], data['employees'],
             data['hq'], data['annual_revenue'], data['industry'],
             current_time

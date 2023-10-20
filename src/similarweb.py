@@ -56,6 +56,7 @@ class SimilarWebTopWebsitesTable():
 class SimilarWebWebsite:
     def __init__(self, filename=None):
         self.base_url = 'https://www.similarweb.com/website/'
+        self.domain_id = ''
         self.domain = ''
         self.global_rank = 0
         self.country_rank = 0
@@ -90,6 +91,7 @@ class SimilarWebWebsite:
         """
         """
         web_data = {
+            'domain_id': self.domain_id,
             'domain': self.domain,
             'company': self.company,
             'year_founder': self.year_founder,

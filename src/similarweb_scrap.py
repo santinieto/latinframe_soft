@@ -47,6 +47,39 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
             web_info = SimilarWebWebsite(filename=filename)
             web_info.fetch_data()
 
+            # Obtengo el ID del canal
+            try:
+                # Defino la consulta que tengo que realizar
+                query = f"select domain_id from similarweb_domains where domain = '{web_info.domain}'"
+
+                # Obtengo el resultado de busqueda
+                query_res = db.select(query)
+
+                # Si obtengo un resultado lo agrego
+                if len(query_res) > 0:
+                    # El resultado es una lista de tuplas
+                    # Me quedo con el primer elemento
+                    result = [x[0] for x in db.select(query)]
+                    domain_id = list(set(result))[0]
+
+                    # Le cargo el ID de dominio a la web
+                    web_info.domain_id = int(domain_id)
+
+                # Sino, le establezco un nuevo ID al dominio
+                else:
+                    # Quiero obtener ahora el maximo valor de IDs
+                    query = "select max(domain_id) from similarweb_domains"
+
+                    # El resultado es una lista de tuplas
+                    # Me quedo con el primer elemento
+                    result = [x[0] for x in db.select(query)]
+                    max_id = list(set(result))[0]
+
+                    # Le cargo el ID de dominio a la web
+                    web_info.domain_id = int(max_id) + 1
+            except:
+                pass
+
             # Muestro el diccionario en pantalla
             print(web_info.to_dicc())
 
