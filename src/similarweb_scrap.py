@@ -9,7 +9,7 @@ except:
     from similarweb import SimilarWebTopWebsitesTable
     from similarweb import SimilarWebWebsite
 
-def scrap_similarweb(results_path='results/similarweb/', delay=12):
+def scrap_similarweb(results_path='results/similarweb/', delay=10):
     """
     """
 
@@ -23,7 +23,8 @@ def scrap_similarweb(results_path='results/similarweb/', delay=12):
     filename = driver.scrap_url(SIMILARWEB_BASE_URL + "top-websites/", 'top_websites', delay=delay)
 
     # Obtengo la lista de paginas mas vistas
-    table = SimilarWebTopWebsitesTable(results_path=results_path)
+    filename = f'{results_path}/{filename}'
+    table = SimilarWebTopWebsitesTable(filename=filename)
     table.fetch_rows()
     url_list = table.get_url_list()
 
@@ -43,7 +44,7 @@ def scrap_similarweb(results_path='results/similarweb/', delay=12):
             filename = f'{results_path}/html_{url[1]}.dat'
 
             # Obtengo la informacion a partir del contenido HTML
-            web_info = SimilarWebWebsite(filename=filename,results_path=results_path)
+            web_info = SimilarWebWebsite(filename=filename)
             web_info.fetch_data()
 
             # Muestro el diccionario en pantalla
