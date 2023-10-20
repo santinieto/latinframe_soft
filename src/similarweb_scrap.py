@@ -15,11 +15,15 @@ except:
 
 import datetime
 
+# Defino la URL base
+SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
+
 def scrap_similarweb_help(script_name, arg):
     print('Similarweb usage:')
     print(f'python {script_name} {arg} -sw []')
     print('\tNULL\tExecute general Similarweb scrap')
     print('\t-help\tThis help message')
+    print('\t-web <domain>\tGet information for given domain')
     print('\t-add <domain>\tAdd web to DB for given domain')
     print('\t-del []\tDelete records from database')
     print('\t\t-id <domain_id>\tUsing an ID from database')
@@ -59,6 +63,38 @@ def get_domain_id(domain = 'youtube.com'):
             domain_id = None
 
     return domain_id
+
+def get_web(domain, results_path='results/similarweb/', delay=15):
+    """
+    """
+    # Armo la URL
+    url = (f'{SIMILARWEB_BASE_URL}/website/{domain}/', domain.replace('.','_'))
+
+    # Creo el objeto de tipo driver
+    driver = Driver(browser="chrome")
+
+    # Hago el scrap
+    driver.scrap_url(url[0], url[1], delay=delay)
+
+    # Armo el nombre del archivo a leer
+    filename = f'{results_path}/html_{url[1]}.dat'
+
+    # Obtengo la informacion a partir del contenido HTML
+    web_info = SimilarWebWebsite(filename=filename)
+    web_info.fetch_data()
+    print(web_info.html_content)
+
+    # Busco el dominio en la base de datos
+    domain_id = get_domain_id(web_info.domain)
+
+    # Le cargo el ID de dominio a la web
+    web_info.domain_id = domain_id
+
+    # Mostrar datos de la pagina
+    cprint('')
+    cprint('-' * 100)
+    cprint(str(web_info))
+    cprint('-' * 100)
 
 def del_web(domain=None, domain_id=None):
     # Me fijo si tengo que buscar el dominio
@@ -147,10 +183,6 @@ def add_web(domain='youtube.com'):
 def scrap_similarweb(results_path='results/similarweb/', delay=10):
     """
     """
-
-    # Defino la URL base
-    SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
-
     # Creo el objeto de tipo driver
     driver = Driver(browser="chrome")
 
@@ -168,7 +200,7 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
             filenames.append( driver.scrap_url(SIMILARWEB_BASE_URL + table_config[0], table_config[1], delay=delay) )
     except:
         for table_config in tables_list:
-            filenames.append( f'results/similarweb/html_{table_config[1]}.dat' )
+            filenames.append( f'{results_path}/html_{table_config[1]}.dat' )
 
     # Creo la lista total de paginas
     url_list = []

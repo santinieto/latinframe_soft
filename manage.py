@@ -127,7 +127,7 @@ if __name__ == '__main__':
                         sw.del_web(domain=subarg_4)
 
                 elif subarg_2 == '-web':
-                    pass
+                    sw.get_web(subarg_3)
 
                 else:
                     sw.scrap_similarweb()
