@@ -9,9 +9,8 @@ except:
     from utils import o_fmt_error
 
 class SimilarWebTopWebsitesTable():
-    def __init__(self, domain='top-websites/', filename='html_top_websites.dat'):
+    def __init__(self, filename='html_top_websites.dat'):
         self.base_url = 'https://www.similarweb.com/'
-        self.domain = domain
         self.row_data = []
         self.html_content = ''
         self.filename = filename
@@ -39,7 +38,7 @@ class SimilarWebTopWebsitesTable():
             row_dicc = {
                 'rank': row.find('span', class_='tw-table__rank').text,
                 'domain': row.find('span', class_='tw-table__domain').text,
-                'category': row.find('a', class_='tw-table__category').text,
+                'category': row.find(['span','a'], class_='tw-table__category').text,
                 'avg_visit_duration': row.find('span', class_='tw-table__avg-visit-duration').text,
                 'pages_per_visit': row.find('span', class_='tw-table__pages-per-visit').text,
                 'bounce_rate': row.find('span', class_='tw-table__bounce-rate').text,

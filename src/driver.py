@@ -49,7 +49,10 @@ class Driver:
         """
         Cierra el navegador y finaliza la instancia del objeto Driver.
         """
-        self.driver.quit()
+        try:
+            self.driver.quit()
+        except:
+            print('No hay ningun driver que cerrar')
 
     def open_url(self, url):
         """
@@ -83,10 +86,9 @@ class Driver:
 
         try:
             # Guardo el contenido HTML
-            file_path = f'{self.results_path}/{filename}'
-            with open(file_path, "w", encoding="utf-8") as file:
+            with open(filename, "w", encoding="utf-8") as file:
                 file.write(self.driver.page_source)
-            print(f'\t- Driver --> HTML content saved into {file_path}')
+            print(f'\t- Driver --> HTML content saved into {filename}')
         except Exception as e:
             print(f"Error al intentar guardar contenido HTML en el archivo {filename}")
             print(f"Codigo de error: {e}")
@@ -101,15 +103,16 @@ class Driver:
 
         # Creo el nombre del archivo
         filename = f'html_{alias}.dat'
+        filepath = f'{self.results_path}/{filename}'
 
         # Actualizo el contenido HTML del objeto
         # y guardo la pagina
-        self.save_html_after_delay(delay=delay, filename=filename)
+        self.save_html_after_delay(delay=delay, filename=filepath)
 
         # Cierro el navegador para liberar recursos
         self.close_driver()
 
-        return filename
+        return filepath
 
     def scrap_url_list(self, input_list, delay=20):
         """

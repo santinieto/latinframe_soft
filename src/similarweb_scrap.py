@@ -23,14 +23,30 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
     # Creo el objeto de tipo driver
     driver = Driver(browser="chrome")
 
-    # Obtengo la informacion de las webs mas vistas
-    filename = driver.scrap_url(SIMILARWEB_BASE_URL + "top-websites/", 'top_websites', delay=delay)
+    # Armo la lista de tablas que quiero
+    tables_list = [
+        # Format ('url','alias')
+        ('top-websites/', 'top_websites'),
+        ('top-websites/arts-and-entertainment/tv-movies-and-streaming/', 'streaming'),
+    ]
 
-    # Obtengo la lista de paginas mas vistas
-    filename = f'{results_path}/{filename}'
-    table = SimilarWebTopWebsitesTable(filename=filename)
-    table.fetch_rows()
-    url_list = table.get_url_list()
+    # Obtengo la informacion de las webs mas vistas
+    filenames = []
+    for table_config in tables_list:
+        filenames.append( driver.scrap_url(SIMILARWEB_BASE_URL + table_config[0], table_config[1], delay=delay) )
+
+    # Para cada top, obtengo la lista de dominios
+    url_list = []
+    for filename in filenames:
+        # Obtengo la lista de paginas mas vistas
+        table = SimilarWebTopWebsitesTable(filename=filename)
+        table.fetch_rows()
+        sub_url_list = table.get_url_list()
+        url_list.extend( sub_url_list )
+    url_list = list(set(url_list))
+
+    # Muestro el total de paginas a scrapear
+    print('Se va a obtener la informacion de {} paginas web'.format(len(url_list)))
 
     # Obtengo el codigo HTML para esas paginas
     driver.scrap_url_list(url_list, delay=delay)
