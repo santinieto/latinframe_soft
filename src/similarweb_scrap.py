@@ -13,13 +13,176 @@ except:
     from utils import cprint
     from utils import o_fmt_error
 
+import datetime
+
+# Defino la URL base
+SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
+
+def scrap_similarweb_help(script_name, arg):
+    print('Similarweb usage:')
+    print(f'python {script_name} {arg} -sw []')
+    print('\tNULL\tExecute general Similarweb scrap')
+    print('\t-help\tThis help message')
+    print('\t-web <domain>\tGet information for given domain')
+    print('\t-add <domain>\tAdd web to DB for given domain')
+    print('\t-del []\tDelete records from database')
+    print('\t\t-id <domain_id>\tUsing an ID from database')
+    print('\t\t-domain <domain>\tUsing a domain from database')
+
+def generate_domain_id():
+    with Database() as db:
+        # Quiero obtener ahora el maximo valor de IDs
+        query = "select max(domain_id) from similarweb_domains"
+
+        # El resultado es una lista de tuplas
+        # Me quedo con el primer elemento
+        result = [x[0] for x in db.select(query)]
+        max_id = list(set(result))[0]
+
+        # Le cargo el ID de dominio a la web
+        domain_id = int(max_id) + 1
+    return domain_id
+
+def get_domain_id(domain = 'youtube.com'):
+    with Database() as db:
+        # Defino la consulta que tengo que realizar
+        query = f"select domain_id from similarweb_domains where domain = '{domain}'"
+
+        # Obtengo el resultado de busqueda
+        query_res = db.select(query)
+
+        # Si obtengo un resultado lo agrego
+        if len(query_res) > 0:
+            # El resultado es una lista de tuplas
+            # Me quedo con el primer elemento
+            result = [x[0] for x in db.select(query)]
+            domain_id = int(list(set(result))[0])
+
+        # Si no se encuentra el ID devuelvo None
+        else:
+            domain_id = None
+
+    return domain_id
+
+def get_web(domain, results_path='results/similarweb/', delay=15):
+    """
+    """
+    # Armo la URL
+    url = (f'{SIMILARWEB_BASE_URL}/website/{domain}/', domain.replace('.','_'))
+
+    # Creo el objeto de tipo driver
+    driver = Driver(browser="chrome")
+
+    # Hago el scrap
+    driver.scrap_url(url[0], url[1], delay=delay)
+
+    # Armo el nombre del archivo a leer
+    filename = f'{results_path}/html_{url[1]}.dat'
+
+    # Obtengo la informacion a partir del contenido HTML
+    web_info = SimilarWebWebsite(filename=filename)
+    web_info.fetch_data()
+    print(web_info.html_content)
+
+    # Busco el dominio en la base de datos
+    domain_id = get_domain_id(web_info.domain)
+
+    # Le cargo el ID de dominio a la web
+    web_info.domain_id = domain_id
+
+    # Mostrar datos de la pagina
+    cprint('')
+    cprint('-' * 100)
+    cprint(str(web_info))
+    cprint('-' * 100)
+
+def del_web(domain=None, domain_id=None):
+    # Me fijo si tengo que buscar el dominio
+    if domain is not None:
+        domain_id = get_domain_id(domain=domain)
+
+    # Si no encontre el dominio en la base de datos y
+    # el usuario no proporciona el ID de dominio
+    # entonces no puedo hacer nada
+    if domain_id is None:
+        print('ERROR! Can not remove data with no information')
+
+    # Armo las consultas SQL
+    query_1 = f"select * from similarweb_domains where domain_id = {domain_id}"
+    query_2 = f"select * from similarweb_records where domain_id = {domain_id}"
+
+    # Abro la conexion con la base de datos
+    with Database() as db:
+        results_1 = db.select(query_1)
+        results_2 = db.select(query_2)
+
+    # Muestro los resultados en la tabla SIMILARWEB_DOMAINS
+    print('- COINCIDENCIAS EN SIMILARWEB_DOMAINS:')
+    if len(results_1) > 0:
+        for res in results_1:
+            print(F'\t{res}')
+    else:
+        print('\t NO RESULTS')
+
+    # Separacion para que se vea todo mas claro
+    print()
+
+    # Muestro los resultados en la tabla SIMILARWEB_RECORDS
+    print('- COINCIDENCIAS EN SIMILARWEB_RECORDS:')
+    if len(results_2) > 0:
+        for res in results_2:
+            print(F'\t{res}')
+    else:
+        print('\t NO RESULTS')
+
+    # Checkeo si tengo resultados para borrar y pido confirmacion de borrado
+    if ((len(results_1) > 0) or
+        (len(results_2) > 0)
+    ):
+        # Le pregunto al usuario si realmente va a borrar los registros
+        ans = None
+        while ans not in ['y','n']:
+            ans = input('Confirm deleting above records? (y/n): ')
+
+        # Borro definitivamente los registros
+        if ans == 'y':
+            query_1 = query_1.replace('select *','delete')
+            query_2 = query_2.replace('select *','delete')
+            # Abro la conexion con la base de datos
+            with Database() as db:
+                results_1 = db.select(query_1)
+                results_2 = db.select(query_2)
+        else:
+            # No hago nada y salgo del programa
+            return
+
+def add_web(domain='youtube.com'):
+    # Busco el dominio en la base de datos
+    domain_id = get_domain_id(domain)
+
+    # Si no lo encontro, genero uno
+    if domain_id is None:
+        print(f'No se encontro el dominio {domain} en la base de datos')
+        domain_id = generate_domain_id()
+        print(f'Se generara el nuevo dominio {domain_id}')
+
+        # Defino la consulta para agregar un dato
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        query = f"insert into similarweb_domains (domain_id, domain, update_date) values (?,?,?)"
+        params = (domain_id, domain, current_time)
+
+        # Abro la base de datos y ejecuto la consulta
+        with Database() as db:
+            db.exec(query,params)
+
+    else:
+        print(f'El dominio {domain} ya se encuentra en la base de datos con ID {domain_id}')
+
+    pass
+
 def scrap_similarweb(results_path='results/similarweb/', delay=10):
     """
     """
-
-    # Defino la URL base
-    SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
-
     # Creo el objeto de tipo driver
     driver = Driver(browser="chrome")
 
@@ -37,7 +200,7 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
             filenames.append( driver.scrap_url(SIMILARWEB_BASE_URL + table_config[0], table_config[1], delay=delay) )
     except:
         for table_config in tables_list:
-            filenames.append( f'results/similarweb/html_{table_config[1]}.dat' )
+            filenames.append( f'{results_path}/html_{table_config[1]}.dat' )
 
     # Creo la lista total de paginas
     url_list = []
@@ -96,34 +259,15 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
 
             # Obtengo el ID del canal
             try:
-                # Defino la consulta que tengo que realizar
-                query = f"select domain_id from similarweb_domains where domain = '{web_info.domain}'"
+                # Busco el dominio en la base de datos
+                domain_id = get_domain_id(web_info.domain)
 
-                # Obtengo el resultado de busqueda
-                query_res = db.select(query)
+                # Si el dominio no se encontro, genero uno nuevo
+                if domain_id is None:
+                    domain_id = generate_domain_id()
 
-                # Si obtengo un resultado lo agrego
-                if len(query_res) > 0:
-                    # El resultado es una lista de tuplas
-                    # Me quedo con el primer elemento
-                    result = [x[0] for x in db.select(query)]
-                    domain_id = list(set(result))[0]
-
-                    # Le cargo el ID de dominio a la web
-                    web_info.domain_id = int(domain_id)
-
-                # Sino, le establezco un nuevo ID al dominio
-                else:
-                    # Quiero obtener ahora el maximo valor de IDs
-                    query = "select max(domain_id) from similarweb_domains"
-
-                    # El resultado es una lista de tuplas
-                    # Me quedo con el primer elemento
-                    result = [x[0] for x in db.select(query)]
-                    max_id = list(set(result))[0]
-
-                    # Le cargo el ID de dominio a la web
-                    web_info.domain_id = int(max_id) + 1
+                # Le cargo el ID de dominio a la web
+                web_info.domain_id = domain_id
             except:
                 pass
 
