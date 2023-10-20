@@ -32,21 +32,48 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
 
     # Obtengo la informacion de las webs mas vistas
     filenames = []
-    for table_config in tables_list:
-        filenames.append( driver.scrap_url(SIMILARWEB_BASE_URL + table_config[0], table_config[1], delay=delay) )
+    try:
+        for table_config in tables_list:
+            filenames.append( driver.scrap_url(SIMILARWEB_BASE_URL + table_config[0], table_config[1], delay=delay) )
+    except:
+        for table_config in tables_list:
+            filenames.append( f'results/similarweb/html_{table_config[1]}.dat' )
+
+    # Creo la lista total de paginas
+    url_list = []
+
+    # Obtengo la lista de dominios desde la base datos
+    # Obtengo los dominios que ya tengo cargados
+    with Database() as db:
+        # Consulta SQL
+        query = "select domain from similarweb_domains"
+        query_res = db.select(query)
+        result = [x[0] for x in query_res]
+        domains = list(set(result))
+
+        sub_url_list = []
+        for domain in domains:
+            # NOTA: CUIDADO CON CAMBIAR ESTO, REVISAR similarweb.py::SimilarWebTopWebsitesTable()
+            url = (f'{SIMILARWEB_BASE_URL}/website/{domain}/', domain.replace('.','_'))
+            sub_url_list.append( url )
+        url_list.extend( sub_url_list )
+
+        # Muestro la cantidad de dominios presentes en la base de datos
+        print(f'- Se obtuvieron {len(sub_url_list)} dominios desde la base de datos')
 
     # Para cada top, obtengo la lista de dominios
-    url_list = []
     for filename in filenames:
         # Obtengo la lista de paginas mas vistas
         table = SimilarWebTopWebsitesTable(filename=filename)
         table.fetch_rows()
         sub_url_list = table.get_url_list()
         url_list.extend( sub_url_list )
+
+    # Elimino repeticiones y paso todo a una lista
     url_list = list(set(url_list))
 
     # Muestro el total de paginas a scrapear
-    print('Se va a obtener la informacion de {} paginas web'.format(len(url_list)))
+    print('- Se va a obtener la informacion de {} paginas web'.format(len(url_list)))
 
     # Obtengo el codigo HTML para esas paginas
     driver.scrap_url_list(url_list, delay=delay)

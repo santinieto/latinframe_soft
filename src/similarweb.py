@@ -52,7 +52,8 @@ class SimilarWebTopWebsitesTable():
         self.url_list = []
         for data in self.row_data:
             self.url_list.append(
-                (self.base_url + f"website/{data['domain']}/", data['domain'].replace('.','_'))
+                # NOTA: CUIDADO CON CAMBIAR ESTO, REVISAR similarweb_scrap.py
+                (self.base_url + f"/website/{data['domain']}/", data['domain'].replace('.','_'))
             )
         return self.url_list
 
