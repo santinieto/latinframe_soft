@@ -3,11 +3,15 @@ try:
     from src.db import Database
     from src.similarweb import SimilarWebTopWebsitesTable
     from src.similarweb import SimilarWebWebsite
+    from src.utils import cprint
+    from src.utils import o_fmt_error
 except:
     from driver import Driver
     from db import Database
     from similarweb import SimilarWebTopWebsitesTable
     from similarweb import SimilarWebWebsite
+    from utils import cprint
+    from utils import o_fmt_error
 
 def scrap_similarweb(results_path='results/similarweb/', delay=10):
     """
@@ -80,8 +84,11 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
             except:
                 pass
 
-            # Muestro el diccionario en pantalla
-            print(web_info.to_dicc())
+            # Mostrar datos de la pagina
+            cprint('')
+            cprint('-' * 100)
+            cprint(str(web_info))
+            cprint('-' * 100)
 
             # Agrego el registro a la tabla
             db.insert_similarweb_record(web_info.to_dicc())

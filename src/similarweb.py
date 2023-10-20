@@ -1,8 +1,12 @@
 from bs4 import BeautifulSoup
 try:
     from src.db import Database
+    from src.utils import cprint
+    from src.utils import o_fmt_error
 except:
     from db import Database
+    from utils import cprint
+    from utils import o_fmt_error
 
 class SimilarWebTopWebsitesTable():
     def __init__(self, domain='top-websites/', filename='html_top_websites.dat'):
@@ -54,7 +58,8 @@ class SimilarWebTopWebsitesTable():
         return self.url_list
 
 class SimilarWebWebsite:
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, debug=False):
+        self.debug = debug
         self.base_url = 'https://www.similarweb.com/website/'
         self.domain_id = ''
         self.domain = ''
@@ -87,6 +92,26 @@ class SimilarWebWebsite:
         with open(self.filename, 'r', encoding="utf-8") as file:
             self.html_content = BeautifulSoup(file, 'html.parser')
 
+    def __str__(self):
+        """
+        """
+        ans  = f"\t- SW Domain ID: {self.domain_id}\n"
+        ans += f"\t- SW Domain: {self.domain}\n"
+        ans += f"\t- SW Company: {self.company}\n"
+        ans += f"\t- SW Year founder: {self.year_founder}\n"
+        ans += f"\t- SW Employees: {self.employees}\n"
+        ans += f"\t- SW HQ: {self.hq}\n"
+        ans += f"\t- SW Annual revenue: {self.annual_revenue}\n"
+        ans += f"\t- SW Industry: {self.industry}\n"
+        ans += f"\t- SW Global rank: {self.global_rank}\n"
+        ans += f"\t- SW Country rank: {self.country_rank}\n"
+        ans += f"\t- SW Category rank: {self.category_rank}\n"
+        ans += f"\t- SW Total visits: {self.total_visits}\n"
+        ans += f"\t- SW Bounce rate: {self.bounce_rate}\n"
+        ans += f"\t- SW Pages per visit: {self.pages_per_visit}\n"
+        ans += f"\t- SW Avg duration visit: {self.avg_duration_visit}"
+        return ans
+
     def to_dicc(self):
         """
         """
@@ -113,6 +138,13 @@ class SimilarWebWebsite:
         self.fetch_domain()
         self.fetch_rank()
         self.fetch_engagement()
+
+        # Debug
+        if self.debug is True:
+            cprint('')
+            cprint('-' * 100)
+            cprint(str(self))
+            cprint('-' * 100)
 
     def fetch_domain(self):
         """
