@@ -105,7 +105,18 @@ if __name__ == '__main__':
 
             # Ejecuto el scrapper de SimilarWeb
             if subarg_1 == '-sw':
-                sw.scrap_similarweb()
+
+                if subarg_2 == '-add':
+                    pass
+
+                elif subarg_2 == '-del':
+                    pass
+
+                elif subarg_2 == '-web':
+                    pass
+
+                else:
+                    sw.scrap_similarweb()
 
             # Ejecuto todo el scraper
             if ((subarg_1 == '-all') or
