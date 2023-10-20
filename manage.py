@@ -109,11 +109,15 @@ if __name__ == '__main__':
                 if subarg_2 == '-help':
                     pass
 
-                if subarg_2 == '-add':
-                    pass
+                elif subarg_2 == '-add':
+                    sw.add_web(subarg_3)
 
                 elif subarg_2 == '-del':
-                    pass
+                    if subarg_3 == '-id':
+                        domain_id = int(subarg_4)
+                        sw.del_web(domain_id=domain_id)
+                    elif subarg_3 == '-domain':
+                        sw.del_web(domain=subarg_4)
 
                 elif subarg_2 == '-web':
                     pass
