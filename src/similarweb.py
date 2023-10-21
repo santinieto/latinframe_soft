@@ -289,7 +289,7 @@ if __name__ == '__main__':
             web_info.fetch_data()
 
             # Muestro el diccionario en pantalla
-            print(web_info.to_dicc())
+            cprint(web_info.to_dicc())
 
             # Agrego el registro a la tabla
             db.insert_similarweb_record(web_info.to_dicc())
