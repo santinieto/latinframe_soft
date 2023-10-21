@@ -18,6 +18,7 @@ class Database:
         self.create_video_tables()
         self.create_channel_tables()
         self.create_similarweb_tables()
+        self.create_news_tables()
 
     def __enter__(self):
         self.conn = sqlite3.connect(self.db_name)
@@ -61,6 +62,9 @@ class Database:
         query = f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"
         self.exec(query)
 
+    #################################################################
+    # Tablas de videos de Youtube
+    #################################################################
     def create_video_tables(self):
         query = '''
         CREATE TABLE IF NOT EXISTS VIDEO (
@@ -115,6 +119,9 @@ class Database:
         )
         self.exec(query, params)
 
+    #################################################################
+    # Tablas de canales de Youtube
+    #################################################################
     def create_channel_tables(self):
         query = '''
         CREATE TABLE IF NOT EXISTS CHANNEL (
@@ -165,6 +172,9 @@ class Database:
         )
         self.exec(query, params)
 
+    #################################################################
+    # Tablas de paginas de SimilarWeb
+    #################################################################
     def create_similarweb_tables(self):
         query = '''
         CREATE TABLE IF NOT EXISTS SIMILARWEB_DOMAINS (
@@ -227,6 +237,85 @@ class Database:
         )
         self.exec(query, params)
 
+    #################################################################
+    # Tablas de noticias
+    #################################################################
+    def create_news_tables(self):
+        query = '''
+        CREATE TABLE IF NOT EXISTS NEWS (
+            NEW_ID INTEGER PRIMARY KEY,
+            TITLE TEXT,
+            TOPIC_ID INTEGER,
+            NEWSPAPER_ID INTEGER,
+            URL TEXT,
+            PUBLISH_DATE DATE,
+            ANTIQUE TEXT,
+            UPDATE_DATE DATE
+        );
+        '''
+        self.exec(query)
+
+        query = '''
+        CREATE TABLE IF NOT EXISTS TOPICS (
+            TOPIC_ID INTEGER PRIMARY KEY,
+            TOPIC TEXT,
+            TOPIC_NEWS INTEGER,
+            UPDATE_DATE DATE
+        );
+        '''
+        self.exec(query)
+
+        query = '''
+        CREATE TABLE IF NOT EXISTS NEWSPAPERS (
+            NEWSPAPER_ID INTEGER PRIMARY KEY,
+            NEWSPAPER TEXT,
+            NEWS_COUNT INTEGER,
+            UPDATE_DATE DATE
+        );
+        '''
+        self.exec(query)
+
+    def insert_news_record(self, data):
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        query = '''
+        INSERT OR REPLACE INTO NEWS (
+            NEW_ID, TITLE, TOPIC_ID, NEWSPAPER_ID, URL, PUBLISH_DATE, ANTIQUE, UPDATE_DATE
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        '''
+        params = (
+            data['new_id'], data['title'],
+            data['topic_id'], data['newspaper_id'], data['url'],
+            data['publish_date'], data['antique'],
+            current_time
+        )
+        self.exec(query, params)
+
+        query = '''
+        INSERT OR REPLACE INTO TOPICS (
+            TOPIC_ID, TOPIC, TOPIC_NEWS, UPDATE_DATE
+        ) VALUES (?, ?, ?, ?)
+        '''
+        params = (
+            data['topic_id'], data['topic'], 1,
+            current_time
+        )
+        self.exec(query, params)
+
+        query = '''
+        INSERT OR REPLACE INTO NEWSPAPERS (
+            NEWSPAPER_ID, NEWSPAPER, NEWS_COUNT, UPDATE_DATE
+        ) VALUES (?, ?, ?, ?)
+        '''
+        params = (
+            data['newspaper_id'], data['newspaper'], 1,
+            current_time
+        )
+        self.exec(query, params)
+
+    #################################################################
+    # Exportacion de tablas
+    #################################################################
     def export_table(self, table_name='CHANNEL', path='results/db/', ext='.csv'):
         import pandas as pd
 
