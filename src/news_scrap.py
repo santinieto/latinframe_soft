@@ -19,7 +19,9 @@ def get_id(id_field='news_id', table_name='news', search_field='title', target='
         query_res = db.select(query)
 
         # Si obtengo un resultado lo proceso
-        if len(query_res) > 0:
+        if ((query_res is not None) and
+            (len(query_res) > 0)
+        ):
             # El resultado es una lista de tuplas
             # Me quedo con el primer elemento
             result = [x[0] for x in db.select(query)]
