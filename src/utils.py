@@ -212,7 +212,12 @@ def cprint(msg):
 
 def get_similarweb_url_tuple(domain):
     """"""
-    url = f'{SIMILARWEB_BASE_URL}/website/{domain}/#overview'
-    url = url.replace('//','/')
-    alias = domain.replace('.','_')
-    return url, alias
+    try:
+        url = f'{SIMILARWEB_BASE_URL}/website/{domain}/#overview'
+        url = url.replace('//','/')
+        alias = domain.replace('.','_')
+        return url, alias
+    except:
+        msg = f'Could not get URL tuple for domain {domain}'
+        o_fmt_error('0001', msg, 'Function__get_similarweb_url_tuple')
+        return None, None

@@ -186,7 +186,9 @@ if __name__ == '__main__':
 
             # Exporto todas las tablas de la base de datos
             # en formato ".csv"
-            if subarg_1 == '-tocsv':
+            if ((subarg_1 == '-tocsv') or
+                (subarg_1 is None)
+            ):
                 with Database() as db:
                     db.export_table(ext='.csv')
 

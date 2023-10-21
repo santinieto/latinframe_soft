@@ -27,27 +27,48 @@ class SimilarWebTopWebsitesTable():
     def set_html_content_fromfile(self, filename=None):
         if filename is not None:
             self.filename = filename
-        with open(self.filename, 'r', encoding="utf-8") as file:
-            self.html_content = BeautifulSoup(file, 'html.parser')
+        try:
+            with open(self.filename, 'r', encoding="utf-8") as file:
+                self.html_content = BeautifulSoup(file, 'html.parser')
+        except:
+            msg = f'Could not save file {filename}'
+            o_fmt_error('0001', msg, 'Class__SimilarWebTopWebsitesTable')
 
     def fetch_rows(self):
         # Encuentro las filas de la tabla
         rows = self.html_content.find_all('tr', class_='top-table__row')
+
+        # Debug
+        if rows is None:
+            msg = f'Could not fetch rows for given table'
+            o_fmt_error('0002', msg, 'Class__SimilarWebTopWebsitesTable')
 
         # Lista para almacenar los diccionarios de datos
         self.row_data = []
 
         # Para cada fila obtengo los datos
         for row in rows:
-            row_dicc = {
-                'rank': row.find('span', class_='tw-table__rank').text,
-                'domain': row.find('span', class_='tw-table__domain').text,
-                'category': row.find(['span','a'], class_='tw-table__category').text,
-                'avg_visit_duration': row.find('span', class_='tw-table__avg-visit-duration').text,
-                'pages_per_visit': row.find('span', class_='tw-table__pages-per-visit').text,
-                'bounce_rate': row.find('span', class_='tw-table__bounce-rate').text,
-            }
-            # Agregar el diccionario a la lista
+            try:
+                row_dicc = {
+                    'rank': row.find('span', class_='tw-table__rank').text,
+                    'domain': row.find('span', class_='tw-table__domain').text,
+                    'category': row.find(['span','a'], class_='tw-table__category').text,
+                    'avg_visit_duration': row.find('span', class_='tw-table__avg-visit-duration').text,
+                    'pages_per_visit': row.find('span', class_='tw-table__pages-per-visit').text,
+                    'bounce_rate': row.find('span', class_='tw-table__bounce-rate').text,
+                }
+                # Agregar el diccionario a la lista
+            except:
+                row_dicc = {
+                    'rank': '',
+                    'domain': '',
+                    'category': '',
+                    'avg_visit_duration': '',
+                    'pages_per_visit': '',
+                    'bounce_rate': '',
+                }
+                msg = f'Could not collect fields for dicctionary. HTML code:\n\n{row}\n\n'
+                o_fmt_error('0003', msg, 'Class__SimilarWebTopWebsitesTable')
             self.row_data.append(row_dicc)
 
     def get_url_list(self):
@@ -92,8 +113,12 @@ class SimilarWebWebsite:
     def set_html_content_fromfile(self, filename=None):
         if filename is not None:
             self.filename = filename
-        with open(self.filename, 'r', encoding="utf-8") as file:
-            self.html_content = BeautifulSoup(file, 'html.parser')
+        try:
+            with open(self.filename, 'r', encoding="utf-8") as file:
+                self.html_content = BeautifulSoup(file, 'html.parser')
+        except:
+            msg = f'Could not save file {filename}'
+            o_fmt_error('0001', msg, 'Class__SimilarWebWebsite')
 
     def __str__(self):
         """
@@ -155,43 +180,58 @@ class SimilarWebWebsite:
         try:
             self.domain = self.html_content.find('p', class_='wa-overview__title').text
         except:
-            pass
+            msg = f'Could not fetch domain'
+            o_fmt_error('0002', msg, 'Class__SimilarWebWebsite')
 
         try:
             info_box = self.html_content.find('div', class_='app-company-info app-company-info--marked wa-overview__company')
             values = info_box.find_all('dd', 'app-company-info__list-item app-company-info__list-item--value')
         except:
-            pass
+            msg = f'Could not fetch values for domain {self.domain}'
+            o_fmt_error('0003', msg, 'Class__SimilarWebWebsite')
+            return
 
         try:
             self.company = values[0].text
         except:
             self.company = None
+            msg = f'Could not fetch companny for domain {self.domain}'
+            o_fmt_error('0009', msg, 'Class__SimilarWebWebsite')
 
         try:
             self.year_founder = int(values[1].text)
         except:
             self.year_founder = None
+            msg = f'Could not fetch year_founder for domain {self.domain}'
+            o_fmt_error('0004', msg, 'Class__SimilarWebWebsite')
 
         try:
             self.employees = values[2].text
         except:
             self.employees = None
+            msg = f'Could not fetch employees for domain {self.domain}'
+            o_fmt_error('0005', msg, 'Class__SimilarWebWebsite')
 
         try:
             self.hq = values[3].text
         except:
             self.hq = None
+            msg = f'Could not fetch hq for domain {self.domain}'
+            o_fmt_error('0006', msg, 'Class__SimilarWebWebsite')
 
         try:
             self.annual_revenue = values[4].text
         except:
             self.annual_revenue = None
+            msg = f'Could not fetch annual_revenue for domain {self.domain}'
+            o_fmt_error('0007', msg, 'Class__SimilarWebWebsite')
 
         try:
             self.industry = values[5].text
         except:
             self.industry = None
+            msg = f'Could not fetch industry for domain {self.domain}'
+            o_fmt_error('0008', msg, 'Class__SimilarWebWebsite')
 
     def fetch_rank(self):
         """
@@ -208,7 +248,8 @@ class SimilarWebWebsite:
             self.country_rank = int(country_box.find('p', class_='wa-rank-list__value').text.replace('#',''))
             self.category_rank = int(category_box.find('p', class_='wa-rank-list__value').text.replace('#',''))
         except:
-            pass
+            msg = f'Could not fetch rank information for domain {self.domain}'
+            o_fmt_error('0010', msg, 'Class__SimilarWebWebsite')
 
     def fetch_engagement(self):
         """
@@ -225,7 +266,8 @@ class SimilarWebWebsite:
             self.pages_per_visit = engagement_elements[2].find('p', class_='engagement-list__item-value').text
             self.avg_duration_visit = engagement_elements[3].find('p', class_='engagement-list__item-value').text
         except:
-            pass
+            msg = f'Could not fetch engagement information for domain {self.domain}'
+            o_fmt_error('0011', msg, 'Class__SimilarWebWebsite')
 
 if __name__ == '__main__':
     # Obtengo la lista de paginas mas vistas
