@@ -105,7 +105,7 @@ def del_web(domain=None, domain_id=None):
     # el usuario no proporciona el ID de dominio
     # entonces no puedo hacer nada
     if domain_id is None:
-        print('ERROR! Can not remove data with no information')
+        cprint('ERROR! Can not remove data with no information')
 
     # Armo las consultas SQL
     query_1 = f"select * from similarweb_domains where domain_id = {domain_id}"
@@ -223,7 +223,7 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10, skip_scrap=Fa
         url_list.extend( sub_url_list )
 
         # Muestro la cantidad de dominios presentes en la base de datos
-        print(f'- Se obtuvieron {len(sub_url_list)} dominios desde la base de datos')
+        cprint(f'- Se obtuvieron {len(sub_url_list)} dominios desde la base de datos')
 
     # Para cada top, obtengo la lista de dominios
     for filename in filenames:
@@ -237,7 +237,7 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10, skip_scrap=Fa
     url_list = list(set(url_list))
 
     # Muestro el total de paginas a scrapear
-    print('- Se va a obtener la informacion de {} paginas web'.format(len(url_list)))
+    cprint('- Se va a obtener la informacion de {} paginas web'.format(len(url_list)))
 
     if skip_scrap is False:
         # Obtengo el codigo HTML para esas paginas
@@ -280,7 +280,12 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10, skip_scrap=Fa
             cprint('-' * 100)
 
             # Agrego el registro a la tabla
-            db.insert_similarweb_record(web_info.to_dicc())
+            web_dicc = web_info.to_dicc()
+            if len(web_dicc['domain'] > 0):
+                db.insert_similarweb_record()
+            else:
+                msg = f'Record not added to DB in scrap_similarweb() for file {filename}. Dicc:\n\n{web_dicc}\n\n'
+                o_fmt_error('0100', msg, 'Function__scrap_similarweb')
 
 if __name__ == '__main__':
     scrap_similarweb()

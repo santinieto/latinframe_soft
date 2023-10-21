@@ -4,6 +4,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
+try:
+    from src.utils import cprint
+    from src.utils import o_fmt_error
+except:
+    from utils import cprint
+    from utils import o_fmt_error
+
 class Driver:
     def __init__(self, browser="chrome", driver_path=r'drivers/',results_path='results/similarweb/'):
         """
@@ -46,7 +53,9 @@ class Driver:
             else:
                 raise ValueError("Navegador no válido. Debe ser 'chrome', 'firefox' o 'edge.")
         except Exception as e:
-            print(f"Error al abrir el navegador: {e}")
+            msg = f"Error al abrir el navegador: {e}"
+            cprint(msg)
+            o_fmt_error('0001', msg, 'Class__Driver')
 
     def close_driver(self):
         """
@@ -54,8 +63,10 @@ class Driver:
         """
         try:
             self.driver.quit()
-        except:
-            print('No hay ningun driver que cerrar')
+        except Exception as e:
+            msg = f'No hay ningun driver que cerrar\n{e}'
+            cprint(msg)
+            o_fmt_error('0002', msg, 'Class__Driver')
 
     def open_url(self, url):
         """
@@ -67,7 +78,9 @@ class Driver:
         try:
             self.driver.get(url)
         except Exception as e:
-            print(f"Error al cargar la URL: {e}")
+            msg = f"Error al cargar la URL: {e}"
+            cprint(msg)
+            o_fmt_error('0003', msg, 'Class__Driver')
 
     def update_html_content(self):
         self.html_content = self.driver.page_source
@@ -77,10 +90,11 @@ class Driver:
             # Guardo el contenido HTML
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(self.driver.page_source)
-            print(f'\t--> HTML content saved into {filename}')
+            cprint(f'\t--> HTML content saved into {filename}')
         except Exception as e:
-            print(f"Error al intentar guardar contenido HTML en el archivo {filename}")
-            print(f"Codigo de error: {e}")
+            msg = f"Error al intentar guardar contenido HTML en el archivo {filename}\nCodigo de error: {e}"
+            cprint(msg)
+            o_fmt_error('0004', msg, 'Class__Driver')
 
     def save_html_after_delay(self, delay=5, filename="scraped_page.html"):
         """
@@ -121,9 +135,10 @@ class Driver:
 
             # Cierro el navegador
             self.close_driver()
-        except:
-            print('\t--> ERROR: Could not fetch data')
-            print('\t-->        Driver.save_html_after_find()')
+        except Exception as e:
+            msg = f"\t--> ERROR: Could not fetch data\n\t-->        Driver.save_html_after_find()\nError: {e}"
+            cprint(msg)
+            o_fmt_error('0005', msg, 'Class__Driver')
 
     def scrap_url(self, url, alias, delay=20, save_method='find'):
 
@@ -167,8 +182,8 @@ class Driver:
 
     def print_scrap_message(self, url, iter=None, total=None):
         if((iter is not None) and (total is not None)):
-            print('Driver --> Scrap ({}/{})'.format(iter,total))
-        print('\t--> URL: {}'.format(url))
+            cprint('Driver --> Scrap ({}/{})'.format(iter,total))
+        cprint('\t--> URL: {}'.format(url))
 
 # Ejemplo de uso
 if __name__ == "__main__":
