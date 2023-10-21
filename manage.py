@@ -135,7 +135,8 @@ if __name__ == '__main__':
                     sw.get_web(subarg_3)
 
                 else:
-                    sw.scrap_similarweb()
+                    skip_scrap = True if subarg_2 == '-skip-scrap' else False
+                    sw.scrap_similarweb(skip_scrap=skip_scrap)
 
             # Ejecuto todo el scraper
             if ((subarg_1 == '-all') or

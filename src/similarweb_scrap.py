@@ -24,6 +24,7 @@ def scrap_similarweb_help(script_name, arg):
     print(f'python {script_name} {arg} -sw []')
     print('\tNULL\tExecute general Similarweb scrap')
     print('\t-help\tThis help message')
+    print('\t-skip-scrap\tProcess scrapped pages')
     print('\t-web <domain>\tGet information for given domain')
     print('\t-add <domain>\tAdd web to DB for given domain')
     print('\t-del []\tDelete records from database')
@@ -179,11 +180,12 @@ def add_web(domain='youtube.com'):
 
     pass
 
-def scrap_similarweb(results_path='results/similarweb/', delay=10):
+def scrap_similarweb(results_path='results/similarweb/', delay=10, skip_scrap=False):
     """
     """
     # Creo el objeto de tipo driver
-    driver = Driver(browser="chrome")
+    if skip_scrap is False:
+        driver = Driver(browser="chrome")
 
     # Armo la lista de tablas que quiero
     tables_list = [
@@ -194,10 +196,10 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
 
     # Obtengo la informacion de las webs mas vistas
     filenames = []
-    try:
+    if skip_scrap is False:
         for table_config in tables_list:
             filenames.append( driver.scrap_url(SIMILARWEB_BASE_URL + table_config[0], table_config[1], delay=delay) )
-    except:
+    else:
         for table_config in tables_list:
             filenames.append( f'{results_path}/html_{table_config[1]}.dat' )
 
@@ -237,11 +239,12 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
     # Muestro el total de paginas a scrapear
     print('- Se va a obtener la informacion de {} paginas web'.format(len(url_list)))
 
-    # Obtengo el codigo HTML para esas paginas
-    driver.scrap_url_list(url_list, delay=delay)
+    if skip_scrap is False:
+        # Obtengo el codigo HTML para esas paginas
+        driver.scrap_url_list(url_list, delay=delay)
 
-    # Cierro la pagina
-    driver.close_driver()
+        # Cierro la pagina
+        driver.close_driver()
 
     # Abro la conexion con la base de datos:
     with Database() as db:
