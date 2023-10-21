@@ -5,6 +5,8 @@ try:
     from src.similarweb import SimilarWebWebsite
     from src.utils import cprint
     from src.utils import o_fmt_error
+    from src.utils import SIMILARWEB_BASE_URL
+    from src.utils import get_similarweb_url_tuple
 except:
     from driver import Driver
     from db import Database
@@ -12,17 +14,17 @@ except:
     from similarweb import SimilarWebWebsite
     from utils import cprint
     from utils import o_fmt_error
+    from utils import SIMILARWEB_BASE_URL
+    from utils import get_similarweb_url_tuple
 
 import datetime
-
-# Defino la URL base
-SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
 
 def scrap_similarweb_help(script_name, arg):
     print('Similarweb usage:')
     print(f'python {script_name} {arg} -sw []')
     print('\tNULL\tExecute general Similarweb scrap')
     print('\t-help\tThis help message')
+    print('\t-skip-scrap\tProcess scrapped pages')
     print('\t-web <domain>\tGet information for given domain')
     print('\t-add <domain>\tAdd web to DB for given domain')
     print('\t-del []\tDelete records from database')
@@ -67,13 +69,13 @@ def get_web(domain, results_path='results/similarweb/', delay=15):
     """
     """
     # Armo la URL
-    url = (f'{SIMILARWEB_BASE_URL}/website/{domain}/', domain.replace('.','_'))
+    url, alias = get_similarweb_url_tuple(domain)
 
     # Creo el objeto de tipo driver
     driver = Driver(browser="chrome")
 
     # Hago el scrap
-    driver.scrap_url(url[0], url[1], delay=delay)
+    driver.scrap_url(url, alias, delay=delay)
 
     # Armo el nombre del archivo a leer
     filename = f'{results_path}/html_{url[1]}.dat'
@@ -81,7 +83,6 @@ def get_web(domain, results_path='results/similarweb/', delay=15):
     # Obtengo la informacion a partir del contenido HTML
     web_info = SimilarWebWebsite(filename=filename)
     web_info.fetch_data()
-    print(web_info.html_content)
 
     # Busco el dominio en la base de datos
     domain_id = get_domain_id(web_info.domain)
@@ -179,11 +180,12 @@ def add_web(domain='youtube.com'):
 
     pass
 
-def scrap_similarweb(results_path='results/similarweb/', delay=10):
+def scrap_similarweb(results_path='results/similarweb/', delay=10, skip_scrap=False):
     """
     """
     # Creo el objeto de tipo driver
-    driver = Driver(browser="chrome")
+    if skip_scrap is False:
+        driver = Driver(browser="chrome")
 
     # Armo la lista de tablas que quiero
     tables_list = [
@@ -194,10 +196,10 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
 
     # Obtengo la informacion de las webs mas vistas
     filenames = []
-    try:
+    if skip_scrap is False:
         for table_config in tables_list:
             filenames.append( driver.scrap_url(SIMILARWEB_BASE_URL + table_config[0], table_config[1], delay=delay) )
-    except:
+    else:
         for table_config in tables_list:
             filenames.append( f'{results_path}/html_{table_config[1]}.dat' )
 
@@ -216,8 +218,8 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
         sub_url_list = []
         for domain in domains:
             # NOTA: CUIDADO CON CAMBIAR ESTO, REVISAR similarweb.py::SimilarWebTopWebsitesTable()
-            url = (f'{SIMILARWEB_BASE_URL}/website/{domain}/', domain.replace('.','_'))
-            sub_url_list.append( url )
+            url, alias = get_similarweb_url_tuple(domain)
+            sub_url_list.append( (url,alias) )
         url_list.extend( sub_url_list )
 
         # Muestro la cantidad de dominios presentes en la base de datos
@@ -237,11 +239,12 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
     # Muestro el total de paginas a scrapear
     print('- Se va a obtener la informacion de {} paginas web'.format(len(url_list)))
 
-    # Obtengo el codigo HTML para esas paginas
-    driver.scrap_url_list(url_list, delay=delay)
+    if skip_scrap is False:
+        # Obtengo el codigo HTML para esas paginas
+        driver.scrap_url_list(url_list, delay=delay)
 
-    # Cierro la pagina
-    driver.close_driver()
+        # Cierro la pagina
+        driver.close_driver()
 
     # Abro la conexion con la base de datos:
     with Database() as db:

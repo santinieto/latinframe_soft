@@ -1,4 +1,7 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 
 class Driver:
@@ -61,7 +64,6 @@ class Driver:
         Args:
             url (str): La URL de la página web a cargar.
         """
-        print(f'- Driver --> Obtaining HTML for URL {url}')
         try:
             self.driver.get(url)
         except Exception as e:
@@ -69,6 +71,16 @@ class Driver:
 
     def update_html_content(self):
         self.html_content = self.driver.page_source
+
+    def save_html_content(self, filename="scraped_page.html"):
+        try:
+            # Guardo el contenido HTML
+            with open(filename, "w", encoding="utf-8") as file:
+                file.write(self.driver.page_source)
+            print(f'\t--> HTML content saved into {filename}')
+        except Exception as e:
+            print(f"Error al intentar guardar contenido HTML en el archivo {filename}")
+            print(f"Codigo de error: {e}")
 
     def save_html_after_delay(self, delay=5, filename="scraped_page.html"):
         """
@@ -84,16 +96,36 @@ class Driver:
         # Actualizo el contenido HTML
         time.sleep(delay)  # Espera el tiempo especificado
 
-        try:
-            # Guardo el contenido HTML
-            with open(filename, "w", encoding="utf-8") as file:
-                file.write(self.driver.page_source)
-            print(f'\t- Driver --> HTML content saved into {filename}')
-        except Exception as e:
-            print(f"Error al intentar guardar contenido HTML en el archivo {filename}")
-            print(f"Codigo de error: {e}")
+        # Guardo el contenido HTML
+        self.save_html_content(filename=filename)
 
-    def scrap_url(self, url, alias, delay=20):
+    def save_html_after_find(self, timeout=30, filename="scraped_page.html"):
+
+        try:
+            # Define un tiempo máximo de espera
+            wait = WebDriverWait(self.driver, timeout)
+
+            # Espera hasta que aparezca el elemento con la clase "app-section__content"
+            elemento = wait.until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'app-section__content'))
+            )
+
+            # Una vez que el elemento está presente, obtén el contenido HTML
+            contenido_html = elemento.get_attribute('outerHTML')
+
+            # Actualizo el contenido HTML
+            self.update_html_content()
+
+            # Guardo el contenido HTML
+            self.save_html_content(filename=filename)
+
+            # Cierro el navegador
+            self.close_driver()
+        except:
+            print('\t--> ERROR: Could not fetch data')
+            print('\t-->        Driver.save_html_after_find()')
+
+    def scrap_url(self, url, alias, delay=20, save_method='find'):
 
         # Abro un driver
         self.open_driver()
@@ -106,8 +138,13 @@ class Driver:
         filepath = f'{self.results_path}/{filename}'
 
         # Actualizo el contenido HTML del objeto
-        # y guardo la pagina
-        self.save_html_after_delay(delay=delay, filename=filepath)
+        # y guardo la pagina luego de un tiempo
+        if save_method == 'wait':
+            self.save_html_after_delay(delay=delay, filename=filepath)
+
+        # Guardo el contenido HTML luego de que aparezca la pagina
+        if save_method == 'find':
+            self.save_html_after_find(timeout=delay, filename=filepath)
 
         # Cierro el navegador para liberar recursos
         self.close_driver()
@@ -120,11 +157,18 @@ class Driver:
             list of url to scrap. Format --> (url, alias)
         """
 
-        for input_element in input_list:
-            url = input_element[0]
+        for kk, input_element in enumerate(input_list):
+            url = input_element[0].replace('//','/')
             alias = input_element[1]
 
+            self.print_scrap_message(url, (kk+1), len(input_list))
+
             self.scrap_url(url, alias, delay=delay)
+
+    def print_scrap_message(self, url, iter=None, total=None):
+        if((iter is not None) and (total is not None)):
+            print('Driver --> Scrap ({}/{})'.format(iter,total))
+        print('\t--> URL: {}'.format(url))
 
 # Ejemplo de uso
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import os
 
 # Variables globables
 HEADER = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36'
+SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
 
 # Funciones
 def getHTTPResponse(url, headers = None, responseType = 'page', verbose = False, debug = False):
@@ -208,3 +209,10 @@ def cprint(msg):
         print(msg)
         console_log_file.write(date + ': ' + msg + "\n")
         console_log_file.close()
+
+def get_similarweb_url_tuple(domain):
+    """"""
+    url = f'{SIMILARWEB_BASE_URL}/website/{domain}/#overview'
+    url = url.replace('//','/')
+    alias = domain.replace('.','_')
+    return url, alias
