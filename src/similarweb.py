@@ -3,10 +3,14 @@ try:
     from src.db import Database
     from src.utils import cprint
     from src.utils import o_fmt_error
+    from src.utils import SIMILARWEB_BASE_URL
+    from src.utils import get_similarweb_url_tuple
 except:
     from db import Database
     from utils import cprint
     from utils import o_fmt_error
+    from utils import SIMILARWEB_BASE_URL
+    from utils import get_similarweb_url_tuple
 
 class SimilarWebTopWebsitesTable():
     def __init__(self, filename='html_top_websites.dat'):
@@ -51,10 +55,9 @@ class SimilarWebTopWebsitesTable():
         """
         self.url_list = []
         for data in self.row_data:
-            self.url_list.append(
-                # NOTA: CUIDADO CON CAMBIAR ESTO, REVISAR similarweb_scrap.py
-                (self.base_url + f"/website/{data['domain']}/", data['domain'].replace('.','_'))
-            )
+            url, alias = get_similarweb_url_tuple(data['domain'])
+            # NOTA: CUIDADO CON CAMBIAR ESTO, REVISAR similarweb_scrap.py
+            self.url_list.append( (url, alias) )
         return self.url_list
 
 class SimilarWebWebsite:

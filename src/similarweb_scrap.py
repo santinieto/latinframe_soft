@@ -5,6 +5,8 @@ try:
     from src.similarweb import SimilarWebWebsite
     from src.utils import cprint
     from src.utils import o_fmt_error
+    from src.utils import SIMILARWEB_BASE_URL
+    from src.utils import get_similarweb_url_tuple
 except:
     from driver import Driver
     from db import Database
@@ -12,11 +14,10 @@ except:
     from similarweb import SimilarWebWebsite
     from utils import cprint
     from utils import o_fmt_error
+    from utils import SIMILARWEB_BASE_URL
+    from utils import get_similarweb_url_tuple
 
 import datetime
-
-# Defino la URL base
-SIMILARWEB_BASE_URL = 'https://www.similarweb.com/'
 
 def scrap_similarweb_help(script_name, arg):
     print('Similarweb usage:')
@@ -67,13 +68,13 @@ def get_web(domain, results_path='results/similarweb/', delay=15):
     """
     """
     # Armo la URL
-    url = (f'{SIMILARWEB_BASE_URL}/website/{domain}/', domain.replace('.','_'))
+    url, alias = get_similarweb_url_tuple(domain)
 
     # Creo el objeto de tipo driver
     driver = Driver(browser="chrome")
 
     # Hago el scrap
-    driver.scrap_url(url[0], url[1], delay=delay)
+    driver.scrap_url(url, alias, delay=delay)
 
     # Armo el nombre del archivo a leer
     filename = f'{results_path}/html_{url[1]}.dat'
@@ -81,7 +82,6 @@ def get_web(domain, results_path='results/similarweb/', delay=15):
     # Obtengo la informacion a partir del contenido HTML
     web_info = SimilarWebWebsite(filename=filename)
     web_info.fetch_data()
-    print(web_info.html_content)
 
     # Busco el dominio en la base de datos
     domain_id = get_domain_id(web_info.domain)
@@ -216,8 +216,8 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10):
         sub_url_list = []
         for domain in domains:
             # NOTA: CUIDADO CON CAMBIAR ESTO, REVISAR similarweb.py::SimilarWebTopWebsitesTable()
-            url = (f'{SIMILARWEB_BASE_URL}/website/{domain}/', domain.replace('.','_'))
-            sub_url_list.append( url )
+            url, alias = get_similarweb_url_tuple(domain)
+            sub_url_list.append( (url,alias) )
         url_list.extend( sub_url_list )
 
         # Muestro la cantidad de dominios presentes en la base de datos
