@@ -30,11 +30,19 @@ class Database:
         self.conn.close()
 
     def db_open(self):
-        self.conn = sqlite3.connect(self.db_name)
-        self.cursor = self.conn.cursor()
+        try:
+            self.conn = sqlite3.connect(self.db_name)
+            self.cursor = self.conn.cursor()
+        except:
+            msg = f'Could not open Database connection for {self.db_name}'
+            o_fmt_error('0003', msg, 'Class__Database')
 
     def db_close(self):
-        self.conn.close()
+        try:
+            self.conn.close()
+        except:
+            msg = f'Error while closing DB connection for {self.db_name}'
+            o_fmt_error('0004', msg, 'Class__Database')
 
     def exec(self, query, params=()):
         try:
@@ -66,252 +74,324 @@ class Database:
     # Tablas de videos de Youtube
     #################################################################
     def create_video_tables(self):
-        query = '''
-        CREATE TABLE IF NOT EXISTS VIDEO (
-            VIDEO_ID TEXT PRIMARY KEY,
-            VIDEO_NAME TEXT,
-            CHANNEL_ID TEXT,
-            VIDEO_LEN TEXT,
-            TAGS TEXT,
-            PUBLISH_DATE DATE,
-            UPDATE_DATE DATE
-        )
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS VIDEO (
+                VIDEO_ID TEXT PRIMARY KEY,
+                VIDEO_NAME TEXT,
+                CHANNEL_ID TEXT,
+                VIDEO_LEN TEXT,
+                TAGS TEXT,
+                PUBLISH_DATE DATE,
+                UPDATE_DATE DATE
+            )
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0005', msg, 'Class__Database')
 
-        query = '''
-        CREATE TABLE IF NOT EXISTS VIDEO_RECORDS (
-            RECORD_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            VIDEO_ID TEXT,
-            VIEWS INTEGER,
-            MOST_VIEWED_MOMENT TEXT,
-            LIKES INTEGER,
-            COMMENTS_COUNT INTEGER,
-            UPDATE_DATE DATE
-        )
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS VIDEO_RECORDS (
+                RECORD_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                VIDEO_ID TEXT,
+                VIEWS INTEGER,
+                MOST_VIEWED_MOMENT TEXT,
+                LIKES INTEGER,
+                COMMENTS_COUNT INTEGER,
+                UPDATE_DATE DATE
+            )
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0006', msg, 'Class__Database')
 
     def insert_video_record(self, video_info):
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        query = '''
-        INSERT OR REPLACE INTO VIDEO (
-            VIDEO_ID, VIDEO_NAME, CHANNEL_ID, VIDEO_LEN, TAGS, PUBLISH_DATE, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        '''
-        params = (
-            video_info['videoID'], video_info['videoName'], video_info['channelID'],
-            video_info['videoLength'], video_info['videoTags'], video_info['publishDate'],
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT OR REPLACE INTO VIDEO (
+                VIDEO_ID, VIDEO_NAME, CHANNEL_ID, VIDEO_LEN, TAGS, PUBLISH_DATE, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            '''
+            params = (
+                video_info['videoID'], video_info['videoName'], video_info['channelID'],
+                video_info['videoLength'], video_info['videoTags'], video_info['publishDate'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0007', msg, 'Class__Database')
 
-        query = '''
-        INSERT INTO VIDEO_RECORDS (
-            VIDEO_ID, VIEWS, MOST_VIEWED_MOMENT, LIKES, COMMENTS_COUNT, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?, ?, ?)
-        '''
-        params = (
-            video_info['videoID'], video_info['views'], video_info['mostViewedMoment'],
-            video_info['likes'], video_info['videoCommentsCount'],
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT INTO VIDEO_RECORDS (
+                VIDEO_ID, VIEWS, MOST_VIEWED_MOMENT, LIKES, COMMENTS_COUNT, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            '''
+            params = (
+                video_info['videoID'], video_info['views'], video_info['mostViewedMoment'],
+                video_info['likes'], video_info['videoCommentsCount'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0008', msg, 'Class__Database')
 
     #################################################################
     # Tablas de canales de Youtube
     #################################################################
     def create_channel_tables(self):
-        query = '''
-        CREATE TABLE IF NOT EXISTS CHANNEL (
-            CHANNEL_ID TEXT PRIMARY KEY,
-            CHANNEL_NAME TEXT,
-            UPDATE_DATE DATE
-        )
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS CHANNEL (
+                CHANNEL_ID TEXT PRIMARY KEY,
+                CHANNEL_NAME TEXT,
+                UPDATE_DATE DATE
+            )
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0015', msg, 'Class__Database')
 
-        query = '''
-        CREATE TABLE IF NOT EXISTS CHANNEL_RECORDS (
-            RECORD_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            CHANNEL_ID TEXT,
-            VIDEOS_COUNT INTEGER,
-            SUBSCRIBERS INTEGER,
-            TOTAL_VIEWS INTEGER,
-            MONTHLY_SUBS INTEGER,
-            DAILY_SUBS INTEGER,
-            UPDATE_DATE DATE
-        )
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS CHANNEL_RECORDS (
+                RECORD_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                CHANNEL_ID TEXT,
+                VIDEOS_COUNT INTEGER,
+                SUBSCRIBERS INTEGER,
+                TOTAL_VIEWS INTEGER,
+                MONTHLY_SUBS INTEGER,
+                DAILY_SUBS INTEGER,
+                UPDATE_DATE DATE
+            )
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0016', msg, 'Class__Database')
 
     def insert_channel_record(self, channel_info):
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        query = '''
-        INSERT OR REPLACE INTO CHANNEL (
-            CHANNEL_ID, CHANNEL_NAME, UPDATE_DATE
-        ) VALUES (?, ?, ?)
-        '''
-        params = (
-            channel_info['channelID'], channel_info['channelName'],
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT OR REPLACE INTO CHANNEL (
+                CHANNEL_ID, CHANNEL_NAME, UPDATE_DATE
+            ) VALUES (?, ?, ?)
+            '''
+            params = (
+                channel_info['channelID'], channel_info['channelName'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0009', msg, 'Class__Database')
 
-        query = '''
-        INSERT INTO CHANNEL_RECORDS (
-            CHANNEL_ID, VIDEOS_COUNT, SUBSCRIBERS, TOTAL_VIEWS, MONTHLY_SUBS, DAILY_SUBS, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        '''
-        params = (
-            channel_info['channelID'], channel_info['nVideos'], channel_info['subscribers'], channel_info['views'],
-            channel_info['monthly_subs'], channel_info['daily_subs'],
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT INTO CHANNEL_RECORDS (
+                CHANNEL_ID, VIDEOS_COUNT, SUBSCRIBERS, TOTAL_VIEWS, MONTHLY_SUBS, DAILY_SUBS, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            '''
+            params = (
+                channel_info['channelID'], channel_info['nVideos'], channel_info['subscribers'], channel_info['views'],
+                channel_info['monthly_subs'], channel_info['daily_subs'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0010', msg, 'Class__Database')
 
     #################################################################
     # Tablas de paginas de SimilarWeb
     #################################################################
     def create_similarweb_tables(self):
-        query = '''
-        CREATE TABLE IF NOT EXISTS SIMILARWEB_DOMAINS (
-            DOMAIN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            DOMAIN TEXT,
-            COMPANY TEXT,
-            YEAR_FOUNDER INTEGER,
-            EMPLOYEES TEXT,
-            HQ TEXT,
-            ANNUAL_REVENUE TEXT,
-            INDUSTRY TEXT,
-            UPDATE_DATE DATE
-        )
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS SIMILARWEB_DOMAINS (
+                DOMAIN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                DOMAIN TEXT,
+                COMPANY TEXT,
+                YEAR_FOUNDER INTEGER,
+                EMPLOYEES TEXT,
+                HQ TEXT,
+                ANNUAL_REVENUE TEXT,
+                INDUSTRY TEXT,
+                UPDATE_DATE DATE
+            )
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0017', msg, 'Class__Database')
 
-        query = '''
-        CREATE TABLE IF NOT EXISTS SIMILARWEB_RECORDS (
-            RECORD_ID INTEGER PRIMARY KEY,
-            DOMAIN_ID INTEGER,
-            GLOBAL_RANK INTEGER,
-            COUNTRY_RANK INTEGER,
-            CATEGORY_RANK INTEGER,
-            TOTAL_VISITS TEXT,
-            BOUNCE_RATE INTEGER,
-            PAGES_PER_VISIT NUMBER,
-            AVG_DURATION_VISIT TEXT,
-            UPDATE_DATE DATE
-        )
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS SIMILARWEB_RECORDS (
+                RECORD_ID INTEGER PRIMARY KEY,
+                DOMAIN_ID INTEGER,
+                GLOBAL_RANK INTEGER,
+                COUNTRY_RANK INTEGER,
+                CATEGORY_RANK INTEGER,
+                TOTAL_VISITS TEXT,
+                BOUNCE_RATE INTEGER,
+                PAGES_PER_VISIT NUMBER,
+                AVG_DURATION_VISIT TEXT,
+                UPDATE_DATE DATE
+            )
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0018', msg, 'Class__Database')
 
     def insert_similarweb_record(self, data):
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        query = '''
-        INSERT OR REPLACE INTO SIMILARWEB_DOMAINS (
-            DOMAIN_ID, DOMAIN, COMPANY, YEAR_FOUNDER, EMPLOYEES, HQ, ANNUAL_REVENUE, INDUSTRY, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        '''
-        params = (
-            data['domain_id'], data['domain'],
-            data['company'], data['year_founder'], data['employees'],
-            data['hq'], data['annual_revenue'], data['industry'],
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT OR REPLACE INTO SIMILARWEB_DOMAINS (
+                DOMAIN_ID, DOMAIN, COMPANY, YEAR_FOUNDER, EMPLOYEES, HQ, ANNUAL_REVENUE, INDUSTRY, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            '''
+            params = (
+                data['domain_id'], data['domain'],
+                data['company'], data['year_founder'], data['employees'],
+                data['hq'], data['annual_revenue'], data['industry'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0011', msg, 'Class__Database')
 
-        query = '''
-        INSERT OR REPLACE INTO SIMILARWEB_RECORDS (
-            DOMAIN_ID, GLOBAL_RANK, COUNTRY_RANK, CATEGORY_RANK, TOTAL_VISITS, BOUNCE_RATE, PAGES_PER_VISIT, AVG_DURATION_VISIT, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        '''
-        params = (
-            data['domain_id'],
-            data['global_rank'], data['country_rank'], data['category_rank'],
-            data['total_visits'], data['bounce_rate'], data['pages_per_visit'],
-            data['avg_duration_visit'],
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT OR REPLACE INTO SIMILARWEB_RECORDS (
+                DOMAIN_ID, GLOBAL_RANK, COUNTRY_RANK, CATEGORY_RANK, TOTAL_VISITS, BOUNCE_RATE, PAGES_PER_VISIT, AVG_DURATION_VISIT, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            '''
+            params = (
+                data['domain_id'],
+                data['global_rank'], data['country_rank'], data['category_rank'],
+                data['total_visits'], data['bounce_rate'], data['pages_per_visit'],
+                data['avg_duration_visit'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0012', msg, 'Class__Database')
 
     #################################################################
     # Tablas de noticias
     #################################################################
     def create_news_tables(self):
-        query = '''
-        CREATE TABLE IF NOT EXISTS NEWS (
-            NEW_ID INTEGER PRIMARY KEY,
-            TITLE TEXT,
-            TOPIC_ID INTEGER,
-            NEWSPAPER_ID INTEGER,
-            URL TEXT,
-            PUBLISH_DATE DATE,
-            ANTIQUE TEXT,
-            UPDATE_DATE DATE
-        );
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS NEWS (
+                NEW_ID INTEGER PRIMARY KEY,
+                TITLE TEXT,
+                TOPIC_ID INTEGER,
+                NEWSPAPER_ID INTEGER,
+                URL TEXT,
+                PUBLISH_DATE DATE,
+                ANTIQUE TEXT,
+                UPDATE_DATE DATE
+            );
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0019', msg, 'Class__Database')
 
-        query = '''
-        CREATE TABLE IF NOT EXISTS TOPICS (
-            TOPIC_ID INTEGER PRIMARY KEY,
-            TOPIC TEXT,
-            TOPIC_NEWS INTEGER,
-            UPDATE_DATE DATE
-        );
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS TOPICS (
+                TOPIC_ID INTEGER PRIMARY KEY,
+                TOPIC TEXT,
+                TOPIC_NEWS INTEGER,
+                UPDATE_DATE DATE
+            );
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0020', msg, 'Class__Database')
 
-        query = '''
-        CREATE TABLE IF NOT EXISTS NEWSPAPERS (
-            NEWSPAPER_ID INTEGER PRIMARY KEY,
-            NEWSPAPER TEXT,
-            NEWS_COUNT INTEGER,
-            UPDATE_DATE DATE
-        );
-        '''
-        self.exec(query)
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS NEWSPAPERS (
+                NEWSPAPER_ID INTEGER PRIMARY KEY,
+                NEWSPAPER TEXT,
+                NEWS_COUNT INTEGER,
+                UPDATE_DATE DATE
+            );
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0021', msg, 'Class__Database')
 
     def insert_news_record(self, data):
         current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        query = '''
-        INSERT OR REPLACE INTO NEWS (
-            NEW_ID, TITLE, TOPIC_ID, NEWSPAPER_ID, URL, PUBLISH_DATE, ANTIQUE, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        '''
-        params = (
-            data['new_id'], data['title'],
-            data['topic_id'], data['newspaper_id'], data['url'],
-            data['publish_date'], data['antique'],
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT OR REPLACE INTO NEWS (
+                NEW_ID, TITLE, TOPIC_ID, NEWSPAPER_ID, URL, PUBLISH_DATE, ANTIQUE, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            '''
+            params = (
+                data['new_id'], data['title'],
+                data['topic_id'], data['newspaper_id'], data['url'],
+                data['publish_date'], data['antique'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0013', msg, 'Class__Database')
 
-        query = '''
-        INSERT OR REPLACE INTO TOPICS (
-            TOPIC_ID, TOPIC, TOPIC_NEWS, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?)
-        '''
-        params = (
-            data['topic_id'], data['topic'], 1,
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT OR REPLACE INTO TOPICS (
+                TOPIC_ID, TOPIC, TOPIC_NEWS, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?)
+            '''
+            params = (
+                data['topic_id'], data['topic'], 1,
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0014', msg, 'Class__Database')
 
-        query = '''
-        INSERT OR REPLACE INTO NEWSPAPERS (
-            NEWSPAPER_ID, NEWSPAPER, NEWS_COUNT, UPDATE_DATE
-        ) VALUES (?, ?, ?, ?)
-        '''
-        params = (
-            data['newspaper_id'], data['newspaper'], 1,
-            current_time
-        )
-        self.exec(query, params)
+        try:
+            query = '''
+            INSERT OR REPLACE INTO NEWSPAPERS (
+                NEWSPAPER_ID, NEWSPAPER, NEWS_COUNT, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?)
+            '''
+            params = (
+                data['newspaper_id'], data['newspaper'], 1,
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0015', msg, 'Class__Database')
 
     #################################################################
     # Exportacion de tablas
@@ -320,7 +400,8 @@ class Database:
         import pandas as pd
 
         table_names = [
-            'VIDEO','VIDEO_RECORDS','CHANNEL','CHANNEL_RECORDS'
+            'VIDEO','VIDEO_RECORDS','CHANNEL','CHANNEL_RECORDS',
+            'NEWS','NEWSPAPERS','SIMILARWEB_DOMAINS','SIMILARWEB_RECORDS','TOPICS',
         ]
 
         for table_name in table_names:
