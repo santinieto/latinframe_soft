@@ -119,7 +119,7 @@ if __name__ == '__main__':
                     '-h','-help',
                     '--h','--help',
                     ]:
-                    sw.scrap_similarweb_help()
+                    sw.scrap_similarweb_help(script_name, arg)
 
                 elif subarg_2 == '-add':
                     sw.add_web(subarg_3)
