@@ -6,6 +6,7 @@ from src.db import Database
 from src.test import Test
 import src.youtube_scrap as yt
 import src.similarweb_scrap as sw
+import src.news_scrap as nw
 import src.sql as sql
 import src.db_fetch as dbf
 import src.environment as env
@@ -107,6 +108,10 @@ if __name__ == '__main__':
             if subarg_1 == '-yt':
                 yt.scrap_youtube()
 
+            # Ejecuto el scrapper de noticias
+            if subarg_1 == '-news':
+                nw.scrap_news()
+
             # Ejecuto el scrapper de SimilarWeb
             if subarg_1 == '-sw':
 
@@ -136,6 +141,7 @@ if __name__ == '__main__':
             if ((subarg_1 == '-all') or
                 (subarg_1 is None and subarg_2 is None)
                ):
+                nw.scrap_news()
                 yt.scrap_youtube()
                 sw.scrap_similarweb()
 

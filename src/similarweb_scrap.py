@@ -57,11 +57,10 @@ def get_domain_id(domain = 'youtube.com'):
             # Me quedo con el primer elemento
             result = [x[0] for x in db.select(query)]
             domain_id = int(list(set(result))[0])
-
         # Si no se encuentra el ID devuelvo None
         else:
             domain_id = None
-
+    # Devuelvo el ID de dominio
     return domain_id
 
 def get_web(domain, results_path='results/similarweb/', delay=15):
