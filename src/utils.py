@@ -170,7 +170,7 @@ def getDateFromFilename(filename):
     else:
         return ('00000000', '000000')
 
-def o_fmt_error(error_code=None, error_message=None, file_name=None):
+def o_fmt_error(error_code=None, error_message=None, ref_code=None, filename=None):
     # Get current date
     import datetime
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -178,8 +178,9 @@ def o_fmt_error(error_code=None, error_message=None, file_name=None):
     if((error_code is None) or (error_message is None)):
         return
     # Open error log file
-    filepath = os.environ.get("SOFT_LOGS")
-    filename = filepath + "/error_log.txt"
+    if filename is None:
+        filepath = os.environ.get("SOFT_LOGS")
+        filename = (filepath if filepath is not None else 'logs') + "/error_log.txt"
     with open(filename, "a", encoding='utf-8') as error_log_file:
         # Add header to error log
         error_log_file.write("=" * 80 + "\n")
@@ -193,7 +194,7 @@ def o_fmt_error(error_code=None, error_message=None, file_name=None):
         error_log_file.write(f"Error Message: {error_message}\n")
         # Add reference message to error log
         error_log_file.write("\n")
-        error_log_file.write(f"Reference Code: {file_name}-{error_code}\n")
+        error_log_file.write(f"Reference Code: {ref_code}-{error_code}\n")
         error_log_file.write("\n")
         #
         error_log_file.close()
