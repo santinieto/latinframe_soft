@@ -1,5 +1,5 @@
 # Abre el archivo en modo lectura (por defecto)
-filename = "scripts/0015_query_1.sql"
+filename = "sql/0015_query_1.sql"
 
 try:
     with open(filename, "r") as archivo:
