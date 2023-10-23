@@ -7,6 +7,7 @@ try:
     from src.utils import o_fmt_error
     from src.utils import SIMILARWEB_BASE_URL
     from src.utils import get_similarweb_url_tuple
+    from src.utils import is_url_arg
 except:
     from driver import Driver
     from db import Database
@@ -16,12 +17,49 @@ except:
     from utils import o_fmt_error
     from utils import SIMILARWEB_BASE_URL
     from utils import get_similarweb_url_tuple
+    from utils import is_url_arg
 
 import datetime
 
-def scrap_similarweb_help(script_name, arg):
+def handle_similarweb_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'similarweb'
+
+    # Obtengo el mensaje de ayuda
+    if args.ayuda:
+        scrap_similarweb_help()
+
+    # Obtengo la informacion de una pagina web
+    elif args.web:
+        if is_url_arg(args.web):
+            get_web(args.web)
+        else:
+            print('No es una URL')
+
+    # Obtengo la informacion de los scraps que ya tengo
+    elif args.obtain:
+        scrap_similarweb(skip_scrap=True)
+
+    # Agrego una web a la base de datos
+    elif args.add:
+        add_web(args.add)
+
+    # Borro una web de la base de datos
+    elif args.delete:
+        if args.delete[0] == 'id':
+            domain_id = int(args.delete[1])
+            del_web(domain_id=domain_id)
+        elif args.delete[0] == 'domain':
+            del_web(domain=args.delete[1])
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
+
+def scrap_similarweb_help():
     print('Similarweb usage:')
-    print(f'python {script_name} {arg} -sw []')
     print('\tNULL\tExecute general Similarweb scrap')
     print('\t-help\tThis help message')
     print('\t-skip-scrap\tProcess scrapped pages')
@@ -118,9 +156,12 @@ def del_web(domain=None, domain_id=None):
 
     # Muestro los resultados en la tabla SIMILARWEB_DOMAINS
     print('- COINCIDENCIAS EN SIMILARWEB_DOMAINS:')
-    if len(results_1) > 0:
-        for res in results_1:
-            print(F'\t{res}')
+    if (results_1 is not None):
+        if (len(results_1) > 0):
+            for res in results_1:
+                print(F'\t{res}')
+        else:
+            print('\t NO RESULTS')
     else:
         print('\t NO RESULTS')
 
@@ -129,11 +170,19 @@ def del_web(domain=None, domain_id=None):
 
     # Muestro los resultados en la tabla SIMILARWEB_RECORDS
     print('- COINCIDENCIAS EN SIMILARWEB_RECORDS:')
-    if len(results_2) > 0:
-        for res in results_2:
-            print(F'\t{res}')
+    if (results_2 is not None):
+        if len(results_2) > 0:
+            for res in results_2:
+                print(F'\t{res}')
+        else:
+            print('\t NO RESULTS')
     else:
         print('\t NO RESULTS')
+
+    if (results_1 is None):
+        return
+    if (results_2 is None):
+        return
 
     # Checkeo si tengo resultados para borrar y pido confirmacion de borrado
     if ((len(results_1) > 0) or
@@ -281,8 +330,8 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10, skip_scrap=Fa
 
             # Agrego el registro a la tabla
             web_dicc = web_info.to_dicc()
-            if len(web_dicc['domain'] > 0):
-                db.insert_similarweb_record()
+            if (len(web_dicc['domain']) > 0):
+                db.insert_similarweb_record(web_dicc)
             else:
                 msg = f'Record not added to DB in scrap_similarweb() for file {filename}. Dicc:\n\n{web_dicc}\n\n'
                 o_fmt_error('0100', msg, 'Function__scrap_similarweb')

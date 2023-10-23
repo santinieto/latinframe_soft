@@ -236,10 +236,10 @@ class SimilarWebWebsite:
     def fetch_rank(self):
         """
         """
-        # Obtengo el cuadro de encabezado
-        rank_header = self.html_content.find('div', class_='wa-rank-list wa-rank-list--md')
-        # Obtengo las cajas
         try:
+            # Obtengo el cuadro de encabezado
+            rank_header = self.html_content.find('div', class_='wa-rank-list wa-rank-list--md')
+            # Obtengo las cajas
             global_box = rank_header.find('div', class_='wa-rank-list__item wa-rank-list__item--global')
             country_box = rank_header.find('div', class_='wa-rank-list__item wa-rank-list__item--country')
             category_box = rank_header.find('div', class_='wa-rank-list__item wa-rank-list__item--category')

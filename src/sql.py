@@ -2,8 +2,49 @@ from src.db import Database
 
 def sql_help(script_name, arg):
     print('Usage:')
-    print(f'python {script_name} {arg} []')
-    print( '\t "query" : Execute the given query')
+    print( '\t "-q QUERY" : Execute the given query')
+    print( '\t "-f FILENAME" : Execute the given query')
+
+def handle_sql_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'test'
+
+    # Obtengo el mensaje de ayuda
+    if args.ayuda:
+        sql_help()
+
+    # Verifico si tengo que leer un archivo
+    # Cargo la consulta y la ejecuto
+    elif args.file:
+        print('SQL - Ejecutar un comando SQL desde un archivo - {}'.format(args.file))
+        query = sql_get_query_fromfile(args.file)
+        sql_execute(query)
+
+    # Ejecuto el comando SQL
+    elif args.query:
+        print('SQL - Ejecutar un comando SQL desde consola - {}'.format(args.query))
+        sql_execute(args.query)
+
+    # Ejecuto un select sobre la base de datos
+    elif args.get:
+        with Database() as db:
+            db.process_data(op='select',type=args.get[0], sel=args.get[1], val=args.get[2])
+
+    # Ejecuto un select sobre la base de datos
+    elif args.select:
+        with Database() as db:
+            db.process_data(op='select',type=args.select[0], sel=args.select[1], val=args.select[2])
+
+    # Ejecuto un delete sobre la base de datos
+    elif args.delete:
+        with Database() as db:
+            db.process_data(op='del',type=args.delete[0], sel=args.delete[1], val=args.delete[2])
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
 
 def sql_get_query_fromfile(filename):
     """
