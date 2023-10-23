@@ -6,6 +6,31 @@ try:
 except:
     from utils import o_fmt_error
 
+def handle_export_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'export'
+
+    # Muestro el mensaje de ayuda
+    if args.ayuda:
+        pass
+
+    # Exporto la base de datos a formato .csv
+    elif args.tocsv:
+        with Database() as db:
+            db.export_table(ext='.csv')
+
+    # Exporto la base de datos a formato Excel
+    elif args.toexcel:
+        with Database() as db:
+            db.export_table(ext='.xlsx')
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
+    pass
+
 class Database:
 
     def __init__(self, db_name='latinframe.db'):
@@ -436,23 +461,26 @@ class Database:
         db_ids = [item[0] for item in db_ids]
         return db_ids
 
-    def process_data(self, op='select', type=None, sel='-name', val='elxokas'):
+    def process_data(self, op='select', type=None, sel='name', val='elxokas'):
 
         # Defino la consulta
-        if type == '-video':
-            if sel == '-id':
+        if type == 'video':
+            if sel == 'id':
                 query = f"SELECT * FROM VIDEO WHERE VIDEO_ID LIKE '%{val}%'"
-            elif sel == '-name':
+            elif sel == 'name':
                 query = f"SELECT * FROM VIDEO WHERE VIDEO_NAME LIKE '%{val}%'"
             elif sel == '-channelid':
                 query = f"SELECT * FROM VIDEO WHERE CHANNEL_ID LIKE '%{val}%'"
             elif sel == '-channelname':
                 query = f"SELECT * FROM VIDEO WHERE CHANNEL_ID = (SELECT CHANNEL_ID FROM CHANNEL WHERE CHANNEL_NAME LIKE '%{val}%')"
-        elif type == '-channel':
-            if sel == '-id':
+        elif type == 'channel':
+            if sel == 'id':
                 query = f"SELECT * FROM CHANNEL WHERE CHANNEL_ID LIKE '%{val}%'"
-            elif sel == '-name':
+            elif sel == 'name':
                 query = f"SELECT * FROM CHANNEL WHERE CHANNEL_NAME LIKE '%{val}%'"
+        else:
+            print('Opciones validas: {channel/video} {id/name} target')
+            return
 
         # Muestro datos por pantalla
         print('\nExecuted query:\n')

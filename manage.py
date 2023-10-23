@@ -3,203 +3,57 @@ import sys
 
 # My modules
 from src.db import Database
-from src.test import Test
 import src.youtube_scrap as yt
 import src.similarweb_scrap as sw
 import src.news_scrap as nw
-import src.sql as sql
 import src.db_fetch as dbf
 import src.environment as env
+from src.arguments import get_parser_args
+from src.arguments import process_parser_args
+
+# Scraper principal
+def handle_scrap_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'scrap'
+
+    # Obtengo el mensaje de ayuda
+    if args.ayuda:
+        pass
+
+    # Scrapeo las noticias
+    if args.all or args.news:
+        nw.scrap_news()
+
+    # Scrapeo Youtube
+    if args.all or args.youtube:
+        yt.scrap_youtube()
+
+    # Scrapeo Youtube
+    if args.all or args.similarweb:
+        sw.scrap_similarweb()
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
 
 # Funcion principal del programa
 if __name__ == '__main__':
     # Preparo el entorno para operar
     env.set_environment()
 
-    # Obtengo los argumentos dados al programa
-    args = sys.argv
+    # Proceso los argumentos
+    parser, args = get_parser_args()
 
-    # Obtener el nombre del script
-    script_name = args[0]
-
-    # Recorrer los demas argumentos
-    for kk, arg in enumerate(args[1:]):
-
-        # Ejecuto los tests de los modulos
-        if arg == '-test':
-            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
-            subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
-
-            # Armo la lista de tests disponibles
-            t = Test(start_dir='./tests/')
-            t.get_suite(pattern='test_*.py')
-            t.generate_test_list()
-
-            # Imprimo el mensaje de ayuda
-            if subarg_1 == '-h':
-                t.help(script_name, arg)
-
-            # Listo los tests y puedo aplicar un filtro si quiero
-            if subarg_1 == '-l':
-                pattern = None if subarg_2 is None else subarg_2
-                t.show_test_list(pattern = pattern)
-
-            # Ejecuto alguno de los tests
-            if subarg_1 == '-r':
-                test_list = subarg_2.split('-')
-                for test in test_list:
-                    t.run(int(test))
-
-        # Ejecuto el scraping
-        if arg == '-scrap':
-            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
-            subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
-            subarg_3 = args[kk + 4] if kk + 4 < len(args) else None
-            subarg_4 = args[kk + 5] if kk + 5 < len(args) else None
-
-            # Obtengo el mensaje de ayuda
-            if subarg_1 in [
-                    '-h','-help',
-                    '--h','--help',
-                    ]:
-                yt.scrap_youtube_help(script_name, arg)
-                sw.scrap_similarweb_help(script_name, arg)
-
-            # Obtengo la informacion de un video unico
-            if subarg_1 == '-video':
-                if '.com' in subarg_2:
-                    video = yt.scrap_video_w_url(subarg_2)
-                else:
-                    video = yt.scrap_video_w_id(subarg_2)
-
-                # Guardo el contenido HTML si fuera necesario
-                if ((subarg_3 == '-save_html') or
-                    (subarg_4 == '-save_html')
-                ):
-                    video.save_html_content()
-
-                # Agrego el registro a la base de datos si es requerido
-                if ((subarg_3 == '-add') or
-                    (subarg_4 == '-add')
-                ):
-                    with Database() as db:
-                        db.insert_video_record(video.to_dicc())
-
-            # Obtengo la informacion de un canal unico
-            if subarg_1 == '-channel':
-                if '.com' in subarg_2:
-                    channel = yt.scrap_channel_w_url(subarg_2)
-                else:
-                    channel = yt.scrap_channel_w_id(subarg_2)
-                channel.fetch_channel_data()
-
-                # Guardo el contenido HTML si fuera necesario
-                if subarg_3 == '-save_html':
-                    channel.save_html_content()
-
-                # Agrego el registro a la base de datos si es requerido
-                if ((subarg_3 == '-add') or
-                    (subarg_4 == '-add')
-                ):
-                    with Database() as db:
-                        db.insert_channel_record(channel.to_dicc())
-
-            # Ejecuto el scrapper de Youtube
-            if subarg_1 == '-yt':
-                yt.scrap_youtube()
-
-            # Ejecuto el scrapper de noticias
-            if subarg_1 == '-news':
-                nw.scrap_news()
-
-            # Ejecuto el scrapper de SimilarWeb
-            if subarg_1 == '-sw':
-
-                if subarg_2 in [
-                    '-h','-help',
-                    '--h','--help',
-                    ]:
-                    sw.scrap_similarweb_help(script_name, arg)
-
-                elif subarg_2 == '-add':
-                    sw.add_web(subarg_3)
-
-                elif subarg_2 == '-del':
-                    if subarg_3 == '-id':
-                        domain_id = int(subarg_4)
-                        sw.del_web(domain_id=domain_id)
-                    elif subarg_3 == '-domain':
-                        sw.del_web(domain=subarg_4)
-
-                elif subarg_2 == '-web':
-                    sw.get_web(subarg_3)
-
-                else:
-                    skip_scrap = True if subarg_2 == '-skip-scrap' else False
-                    sw.scrap_similarweb(skip_scrap=skip_scrap)
-
-            # Ejecuto todo el scraper
-            if ((subarg_1 == '-all') or
-                (subarg_1 is None and subarg_2 is None)
-               ):
-                nw.scrap_news()
-                yt.scrap_youtube()
-                sw.scrap_similarweb()
-
-        if arg == '-sql':
-            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
-            subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
-
-            # Obtengo el mensaje de ayuda
-            if subarg_1 == '-help':
-                sql.sql_help(script_name, arg)
-
-            # Verifico si tengo que leer un archivo
-            # Cargo la consulta y la ejecuto
-            if subarg_1 == '-file':
-                query = sql.sql_get_query_fromfile(subarg_2)
-                sql.sql_execute(query)
-
-            # Ejecuto el comando SQL
-            else:
-                sql.sql_execute(subarg_1)
-
-        if arg == '-db':
-            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
-            subarg_2 = args[kk + 3] if kk + 3 < len(args) else None
-            subarg_3 = args[kk + 4] if kk + 4 < len(args) else None
-            subarg_4 = args[kk + 5] if kk + 5 < len(args) else None
-
-            if subarg_1 == '-get':
-                with Database() as db:
-                    db.process_data(op='select',type=subarg_2, sel=subarg_3, val=subarg_4)
-            elif subarg_1 == '-del':
-                with Database() as db:
-                    db.process_data(op='del',type=subarg_2, sel=subarg_3, val=subarg_4)
-
-        if arg == '-fetch':
-            print('Fetching DB...')
-            dbf.youtube_db_fetch()
-
-        if arg == '-export':
-            subarg_1 = args[kk + 2] if kk + 2 < len(args) else None
-
-            # Exporto todas las tablas de la base de datos
-            # en formato ".csv"
-            if ((subarg_1 == '-tocsv') or
-                (subarg_1 is None)
-            ):
-                with Database() as db:
-                    db.export_table(ext='.csv')
-
-            # Exporto todas las tablas de la base de datos
-            # en formato ".xlsx"
-            if subarg_1 == '-toexcel':
-                with Database() as db:
-                    db.export_table(ext='.xlsx')
-
-        if arg == '-genbkp':
-            dbf.sql_generate_db_backup()
+    # Verifico si tengo que correr el scraper principal
+    if args.module == 'scrap':
+        handle_scrap_args(args)
+    else:
+        process_parser_args(parser, args)
 
     # Clear environment variables
     env.unset_environment()
+
+    # Salgo del programa con valor 0
+    sys.exit(0)

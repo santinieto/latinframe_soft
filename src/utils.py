@@ -222,3 +222,11 @@ def get_similarweb_url_tuple(domain):
         msg = f'Could not get URL tuple for domain {domain}'
         o_fmt_error('0001', msg, 'Function__get_similarweb_url_tuple')
         return None, None
+
+def is_url_arg(arg):
+    if '.com' in arg:
+        return True
+    if 'https' in arg:
+        return True
+    else:
+        return False

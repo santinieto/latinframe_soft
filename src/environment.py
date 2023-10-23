@@ -22,6 +22,9 @@ def set_environment():
         os.environ["EMAIL_PASSWORD"] = config.get("password")
         os.environ["EMAIL_PLATFORM"] = config.get("platform")
     except Exception as e:
+        os.environ["EMAIL_ADRESS"] = ''
+        os.environ["EMAIL_PASSWORD"] = ''
+        os.environ["EMAIL_PLATFORM"] = ''
         msg = f'Could not load environmnet variables.\nError: {e}'
         o_fmt_error('0001', msg, 'Function__set_environment')
 

@@ -1,16 +1,100 @@
-from src.utils import cprint, getHTTPResponse
+from src.utils import cprint, getHTTPResponse, is_url_arg
 from src.youtube import YoutubeVideo
 from src.youtube import YoutubeChannel
 from src.db import Database
 
 def scrap_youtube_help(script_name, arg):
     print('Usage:')
-    print(f'python {script_name} {arg} []')
     print( '\t NULL : Execute all scraps')
     print( '\t -all : Execute all scraps')
     print( '\t -video <video_id/"url"> [] : Scrap a single video')
     print( '\t\t -save_html : Save HTML content (optional)')
-    pass
+
+def handle_video_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'video'
+
+    # Mensaje de ayuda
+    if args.ayuda:
+        scrap_youtube_help()
+
+    # Scrapeo un video con la ID
+    elif args.id:
+        if is_url_arg(args.id) == True:
+            print('ID no valido')
+        else:
+            video = scrap_video_w_id(args.id)
+
+    # Scrapero un video con la URL
+    elif args.url:
+        if is_url_arg(args.url) == True:
+            video = scrap_video_w_url(args.url)
+        else:
+            print('URL no valida')
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
+
+    # Agregar el video a la base de datos
+    if args.add:
+        with Database() as db:
+            db.insert_video_record(video.to_dicc())
+
+    # Borrar el video a la base de datos
+    elif args.delete:
+        print('Video - Borrar un video a la base de datos - {}'.format(args.delete))
+        print('Comming soon...')
+
+    # Guardo el contenido HTML si fuera necesario
+    if args.save_html:
+        video.save_html_content()
+
+def handle_channel_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'channel'
+
+    # Mensaje de ayuda
+    if args.ayuda:
+        scrap_youtube_help()
+
+    # Scrapeo un canal con la ID
+    elif args.id:
+        if is_url_arg(args.id) == True:
+            print('ID no valido')
+        else:
+            channel = scrap_channel_w_id(args.id)
+            channel.fetch_channel_data()
+
+    # Scrapero un canal con la URL
+    elif args.url:
+        if is_url_arg(args.url) == True:
+            channel = scrap_channel_w_url(args.url)
+            channel.fetch_channel_data()
+        else:
+            print('URL no valida')
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
+
+    # Agregar el canal a la base de datos
+    if args.add:
+        with Database() as db:
+            db.insert_channel_record(channel.to_dicc())
+
+    # Borrar el canal a la base de datos
+    elif args.delete:
+        print('Channel - Borrar un video a la base de datos - {}'.format(args.delete))
+        print('Comming soon...')
+
+    # Guardo el contenido HTML si fuera necesario
+    if args.save_html:
+        channel.save_html_content()
 
 def scrap_video_w_url(url):
     """

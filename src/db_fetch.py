@@ -7,6 +7,44 @@ from src.db import Database
 from src.utils import cprint
 from src.utils import get_formatted_date
 
+def handle_fetch_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'fetch'
+
+    # Muestro el mensaje de ayuda
+    if args.ayuda:
+        pass
+
+    # Ejecuto el analisis de sanidad de la base de datos de Youtube
+    elif args.all or args.youtube:
+        youtube_db_fetch()
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
+    pass
+
+def handle_backup_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'backup'
+
+    # Muestro el mensaje de ayuda
+    if args.ayuda:
+        pass
+
+    # Ejecuto el analisis de sanidad de la base de datos de Youtube
+    elif args.all or args.database:
+        sql_generate_db_backup()
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
+    pass
+
 def youtube_db_fetch():
     current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
