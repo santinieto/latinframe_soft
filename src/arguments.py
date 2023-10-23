@@ -44,6 +44,7 @@ def get_parser_args():
     scrap_parser.add_argument('-yt', '--youtube', action='store_true', help='Scrapear YouTube')
     scrap_parser.add_argument('-nw', '--news', action='store_true', help='Scrapear noticias')
     scrap_parser.add_argument('-sw', '--similarweb', action='store_true', help='Scrapear SimilarWebs')
+    scrap_parser.add_argument('-mail', '--send-mail', action='store_true', help='Scrapear SimilarWebs')
 
     # Modulo de tests
     test_parser.add_argument('-ay', '--ayuda', action='store_true', help='Mensaje de ayuda')
@@ -93,7 +94,7 @@ def get_parser_args():
 
     # Modulo de backups
     backup_parser.add_argument('-ay', '--ayuda', action='store_true', help='Mensaje de ayuda')
-    backup_parser.add_argument('-all', '--ayuda', action='store_true', help='Hacer un backup de todo')
+    backup_parser.add_argument('-all', '--all', action='store_true', help='Hacer un backup de todo')
     backup_parser.add_argument('-db', '--database', action='store_true', help='Hacer un backup de todo')
 
     # Leo los comandos de teclado

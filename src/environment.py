@@ -14,7 +14,7 @@ def set_environment():
 
     # Leer las credenciales desde el archivo JSON
     try:
-        credentials_file = os.environ["SOFT_UTILS"] + 'credentials.json'
+        credentials_file = os.environ["SOFT_UTILS"] + '/credentials.json'
         with open(credentials_file, 'r') as config_file:
             config = json.load(config_file)
 

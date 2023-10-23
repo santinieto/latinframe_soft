@@ -330,8 +330,8 @@ def scrap_similarweb(results_path='results/similarweb/', delay=10, skip_scrap=Fa
 
             # Agrego el registro a la tabla
             web_dicc = web_info.to_dicc()
-            if len(web_dicc['domain'] > 0):
-                db.insert_similarweb_record()
+            if (len(web_dicc['domain']) > 0):
+                db.insert_similarweb_record(web_dicc)
             else:
                 msg = f'Record not added to DB in scrap_similarweb() for file {filename}. Dicc:\n\n{web_dicc}\n\n'
                 o_fmt_error('0100', msg, 'Function__scrap_similarweb')

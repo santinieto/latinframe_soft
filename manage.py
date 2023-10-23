@@ -2,14 +2,13 @@
 import sys
 
 # My modules
-from src.db import Database
 import src.youtube_scrap as yt
 import src.similarweb_scrap as sw
 import src.news_scrap as nw
-import src.db_fetch as dbf
 import src.environment as env
 from src.arguments import get_parser_args
 from src.arguments import process_parser_args
+from src.mail import send_mail
 
 # Scraper principal
 def handle_scrap_args(args):
@@ -31,6 +30,10 @@ def handle_scrap_args(args):
     # Scrapeo Youtube
     if args.all or args.similarweb:
         sw.scrap_similarweb()
+
+    # Mando el correo si se requiere
+    if args.send_mail:
+        send_mail()
 
     # Mensaje de error por defecto
     else:
