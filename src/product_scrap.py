@@ -9,6 +9,33 @@ except:
     from utils import generateRandomUserAgent
     from db import Database
 
+def handle_toys_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'toys'
+
+    # Muestro el mensaje de ayuda
+    if args.ayuda:
+        print('Mensaje de ayuda')
+
+    # Hacer un scrap de Amazon
+    if args.all or args.amazon:
+        scrap_amazon_products(topics = [
+            # 'toys', # NO FUNCIONAN
+            # 'bestsellers toys and games', # NO FUNCIONAN
+        ])
+
+    # Hacer un scrap de Mercado Libre
+    if args.all or args.mercadolibre:
+        scrap_meli_products(topics = [
+            'disney',
+        ])
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
+
 def save_html(filename, content):
     # Guardo el contenido HTML
     with open(filename, "w", encoding="utf-8") as file:
