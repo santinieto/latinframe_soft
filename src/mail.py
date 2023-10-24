@@ -9,7 +9,7 @@ try:
 except:
     from utils import o_fmt_error
 
-def send_mail(subject='Subject', message='Body', dest='santi.nieto@live.com', filename=None):
+def send_mail(subject='Subject', message='Body', dest='santi.nieto@live.com', filename=None, show_mail=True):
 
     # Crear un objeto MIMEMultipart
     mail = MIMEMultipart()
@@ -23,12 +23,14 @@ def send_mail(subject='Subject', message='Body', dest='santi.nieto@live.com', fi
         message = ''
 
     # Adjuntar el archivo, si se proporciona
+    attached_file = False
     if filename is not None:
         try:
             with open(filename, "rb") as adjunto:
                 archivo_mime = MIMEApplication(adjunto.read(), _subtype="pdf")  # Cambia "pdf" según el tipo de archivo
                 archivo_mime.add_header('Content-Disposition', 'attachment', filename=filename)
                 mail.attach(archivo_mime)
+                attached_file = True
         except:
             err_msg = f'Could not find file {filename} for email'
             o_fmt_error('0001', err_msg, 'Function__Send_email')
@@ -57,6 +59,16 @@ def send_mail(subject='Subject', message='Body', dest='santi.nieto@live.com', fi
 
     # Cerrar la conexión con el servidor SMTP
     server_smtp.quit()
+
+    # Muestro el correo
+    if show_mail is True:
+        print()
+        print('From: {}\n'.format(mail['From']))
+        print('To: {}\n'.format(mail['To']))
+        print('Subject: {}\n'.format(mail['Subject']))
+        if attached_file is True:
+            print('Attached: {}\n'.format(filename))
+        print('Content:\n{}\n'.format(message))
 
 if __name__ == '__main__':
 

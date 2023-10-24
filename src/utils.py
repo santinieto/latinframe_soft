@@ -139,23 +139,23 @@ def get_formatted_date():
 
     return formatted_date
 
-def getDirFiles(path, pattern=None):
+def get_dir_files(path, pattern=None):
     """Obtener los archivos dentro de un directorio.
        Ademas, se puede utilizar un patron para filtrar
        determinados archivos que nos interesen
     """
 
     # Obtengo los nombres de los archivos
-    fileList = os.listdir(path)
+    file_list = os.listdir(path)
 
     # Filtro los nombres si se requiere
     if pattern is not None:
-        fileList = [x for x in fileList if pattern in x]
+        file_list = [x for x in file_list if pattern in x]
 
     # Devuelvo la lista filtrada
-    return fileList
+    return file_list
 
-def getDateFromFilename(filename):
+def get_date_from_filename(filename):
     """Función para obtener la fecha y hora de un nombre de archivo usando expresiones regulares"""
 
     # Expresion regular requerida
@@ -169,6 +169,24 @@ def getDateFromFilename(filename):
         return (res.group(1), res.group(2))
     else:
         return ('00000000', '000000')
+
+def get_newest_file(filename_list):
+
+    filter_list = []
+
+    for filename in filename_list:
+        date = get_date_from_filename(filename)
+        filter_list.append((filename, date))
+
+    if filter_list:
+        filter_list.sort(key=lambda x: x[1], reverse=True)
+        newest_file = filter_list[0][0]
+        print(f"El archivo más nuevo es: {newest_file}")
+    else:
+        newest_file = None
+        print("No se encontraron archivos en el formato esperado.")
+
+    return newest_file
 
 def o_fmt_error(error_code=None, error_message=None, ref_code=None, filename=None):
     # Get current date
