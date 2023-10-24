@@ -1,18 +1,12 @@
 import re
 
-try:
-    from src.utils import getHTTPResponse
-    from src.utils import generateRandomUserAgent
-except:
-    from utils import getHTTPResponse
-    from utils import generateRandomUserAgent
-
 class Product:
     def __init__(self):
-        self.id = None
+        self.product_id = None
         self.name = ''
-        self.descrption = ''
+        self.description = ''
         self.price = 0.0
+        self.cuotas = 1
         self.currency = ''
         self.rank = 0
         self.rating = 0.0
@@ -21,16 +15,18 @@ class Product:
         self.store = ''
         self.most_selled = 0
         self.promoted = 0
+        self.url = ''
 
         # Este no va en el diccionario
         self.html_content = ''
 
     def to_dicc(self):
         return {
-            'id': self.id,
+            'product_id': self.product_id,
             'name': self.name,
-            'descrption': self.descrption,
+            'description': self.description,
             'price': self.price,
+            'cuotas': self.cuotas,
             'currency': self.currency,
             'rank': self.rank,
             'rating': self.rating,
@@ -39,6 +35,7 @@ class Product:
             'store': self.store,
             'most_selled': self.most_selled,
             'promoted': self.promoted,
+            'url': self.url,
         }
 
 class MeLiProduct(Product):
@@ -50,11 +47,29 @@ class MeLiProduct(Product):
         self.platform = 'Mercado Libre'
 
     def fetch_data(self):
+        self.fetch_url_id_rank()
         self.fetch_name()
         self.fetch_price()
         self.fetch_store()
         self.fetch_rating()
         self.fetch_specials()
+
+    def fetch_url_id_rank(self):
+        try:
+            content_wrapper = self.html_content.find('div', class_='ui-search-result__content-wrapper')
+            self.url = content_wrapper.find('a').get('href')
+        except:
+            self.url = ''
+
+        try:
+            self.product_id = 'MLA-{}'.format( re.search(r'MLA-?(\d+)', self.url).group(1) )
+        except:
+            self.product_id = 'MLA-{}'.format( re.search(r'MLA-?(\d+)', self.html_content.prettify()).group(1) )
+
+        try:
+            self.rank = int( re.search(r'position=(\d+)', self.url).group(1) )
+        except:
+            self.rank = 0
 
     def fetch_name(self):
         # Obtener el nombre del juguete
@@ -75,6 +90,13 @@ class MeLiProduct(Product):
             self.price = float(self.price)
         except:
             self.price = 0
+
+        try:
+            self.cuotas = self.html_content.find('span', class_=[
+                'ui-search-item__group__element ui-search-installments ui-search-color--LIGHT_GREEN',
+            ]).text.split()[3]
+        except:
+            self.cuotas = 1
 
     def fetch_store(self):
         # Obtengo el vendedor del juguete
@@ -134,6 +156,11 @@ class AmazonProduct(Product):
         self.fetch_store()
         self.fetch_rating()
         self.fetch_specials()
+        self.fetch_url_id()
+
+    def fetch_url_id(self):
+        self.url = 'https://www.amazon.com.mx/{}'.format(self.html_content.find('a').get('href'))
+        self.product_id = re.search(r'/dp/(\w+)', self.url).group(1)
 
     def fetch_name(self):
         # Obtener el nombre del juguete

@@ -1,7 +1,40 @@
 try:
     from src.product import *
+    from src.utils import getHTTPResponse
+    from src.utils import generateRandomUserAgent
+    from src.db import Database
 except:
     from product import *
+    from utils import getHTTPResponse
+    from utils import generateRandomUserAgent
+    from db import Database
+
+def handle_toys_args(args):
+    # Defino un nombre por defecto al modulo
+    module_name = 'toys'
+
+    # Muestro el mensaje de ayuda
+    if args.ayuda:
+        print('Mensaje de ayuda')
+
+    # Hacer un scrap de Amazon
+    if args.all or args.amazon:
+        scrap_amazon_products(topics = [
+            # 'toys', # NO FUNCIONAN
+            # 'bestsellers toys and games', # NO FUNCIONAN
+        ])
+
+    # Hacer un scrap de Mercado Libre
+    if args.all or args.mercadolibre:
+        scrap_meli_products(topics = [
+            'disney',
+        ])
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
 
 def save_html(filename, content):
     # Guardo el contenido HTML
@@ -58,11 +91,16 @@ def scrap_amazon_products(topics=[], tries=10):
             ])
 
         # Iterar sobre los elementos encontrados y extraer la información deseada
+        toys_dicc = []
         for k, toy in enumerate(toys):
             x = AmazonProduct()
             x.html_content = toy
             x.fetch_data()
-            print(x.to_dicc())
+            toys_dicc.append( x.to_dicc() )
+
+        with Database() as db:
+            for toy_dicc in toys_dicc:
+                db.insert_product_record( toy_dicc )
 
 def scrap_meli_products(topics=[], tries=10):
     """
@@ -91,11 +129,16 @@ def scrap_meli_products(topics=[], tries=10):
         toys = page.find_all('div', class_='ui-search-result__wrapper')
 
         # Iterar sobre los elementos encontrados y extraer la información deseada
+        toys_dicc = []
         for k, toy in enumerate(toys):
             x = MeLiProduct()
             x.html_content = toy
             x.fetch_data()
-            print(x.to_dicc())
+            toys_dicc.append( x.to_dicc() )
+
+        with Database() as db:
+            for toy_dicc in toys_dicc:
+                db.insert_product_record( toy_dicc )
 
 def search_urls_amazon(topics=['toys'], tries=10):
     """
@@ -131,3 +174,13 @@ if __name__ == '__main__':
     scrap_meli_products(topics = [
         'disney',
     ])
+
+def get_meli_url(produc_id, product_name):
+    return 'https://articulo.mercadolibre.com.ar/{}-{}-_JM/'.format(
+        produc_id, product_name.replace('','-')
+    )
+
+def get_amazon_mx_url(product_id, product_name):
+    return 'https://www.amazon.com.mx/{}/dp/{}/'.format(
+        product_name.replace('','-'), product_id
+    )

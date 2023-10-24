@@ -44,6 +44,7 @@ class Database:
         self.create_channel_tables()
         self.create_similarweb_tables()
         self.create_news_tables()
+        self.create_product_tables()
 
     def __enter__(self):
         self.conn = sqlite3.connect(self.db_name)
@@ -417,6 +418,84 @@ class Database:
         except:
             msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
             o_fmt_error('0015', msg, 'Class__Database')
+
+
+    #################################################################
+    # Tablas de productos
+    #################################################################
+    def create_product_tables(self):
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS PRODUCT (
+                PRODUCT_ID TEXT PRIMARY KEY,
+                NAME TEXT,
+                DESCRIPTION TEXT,
+                PLATFORM TEXT,
+                STORE TEXT,
+                URL TEXT,
+                UPDATE_DATE DATE
+            );
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0022', msg, 'Class__Database')
+
+        try:
+            query = '''
+            CREATE TABLE IF NOT EXISTS PRODUCT_RECORDS (
+                PRODUCT_ID TEXT PRIMARY KEY,
+                PRICE NUMBER,
+                CUOTAS INTEGER,
+                CURRENCY TEXT,
+                RANK INTEGER,
+                RATING NUMBER,
+                RATE_COUNT INTEGER,
+                MOST_SELLED INTEGER,
+                PROMOTED INTEGER,
+                UPDATE_DATE DATE
+            );
+            '''
+            self.exec(query)
+        except:
+            msg = f'Error while creating table:\n\n{query}\n\n'
+            o_fmt_error('0023', msg, 'Class__Database')
+
+    def insert_product_record(self, data={}):
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        try:
+            query = '''
+            INSERT OR REPLACE INTO PRODUCT (
+                PRODUCT_ID, NAME, DESCRIPTION, PLATFORM, STORE, URL, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            '''
+            params = (
+                data['product_id'], data['name'], data['description'],
+                data['platform'], data['store'], data['url'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0024', msg, 'Class__Database')
+
+        try:
+            query = '''
+            INSERT OR REPLACE INTO PRODUCT_RECORDS (
+                PRODUCT_ID, PRICE, CUOTAS, CURRENCY, RANK, RATING, RATE_COUNT, MOST_SELLED, PROMOTED, UPDATE_DATE
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            '''
+            params = (
+                data['product_id'], data['price'], data['cuotas'],
+                data['currency'], data['rank'], data['rating'],
+                data['rate_count'], data['most_selled'], data['promoted'],
+                current_time
+            )
+            self.exec(query, params)
+        except:
+            msg = f'Error while updating/inserting records for query:\n\n{query}\n\n{params}\n\n'
+            o_fmt_error('0025', msg, 'Class__Database')
 
     #################################################################
     # Exportacion de tablas

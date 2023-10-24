@@ -5,6 +5,7 @@ import sys
 import src.youtube_scrap as yt
 import src.similarweb_scrap as sw
 import src.news_scrap as nw
+import src.product_scrap as prd
 import src.environment as env
 from src.arguments import get_parser_args
 from src.arguments import process_parser_args
@@ -27,9 +28,14 @@ def handle_scrap_args(args):
     if args.all or args.youtube:
         yt.scrap_youtube()
 
-    # Scrapeo Youtube
+    # Scrapeo SimilarWeb
     if args.all or args.similarweb:
         sw.scrap_similarweb()
+
+    # Scrapeo los jueuges
+    if args.all or args.toys:
+        prd.scrap_amazon_products()
+        prd.scrap_meli_products()
 
     # Mando el correo si se requiere
     if args.send_mail:
