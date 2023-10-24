@@ -156,6 +156,11 @@ class AmazonProduct(Product):
         self.fetch_store()
         self.fetch_rating()
         self.fetch_specials()
+        self.fetch_url_id()
+
+    def fetch_url_id(self):
+        self.url = 'https://www.amazon.com.mx/{}'.format(self.html_content.find('a').get('href'))
+        self.product_id = re.search(r'/dp/(\w+)', self.url).group(1)
 
     def fetch_name(self):
         # Obtener el nombre del juguete

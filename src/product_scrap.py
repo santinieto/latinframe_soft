@@ -64,11 +64,16 @@ def scrap_amazon_products(topics=[], tries=10):
             ])
 
         # Iterar sobre los elementos encontrados y extraer la información deseada
+        toys_dicc = []
         for k, toy in enumerate(toys):
             x = AmazonProduct()
             x.html_content = toy
             x.fetch_data()
-            print(x.to_dicc())
+            toys_dicc.append( x.to_dicc() )
+
+        with Database() as db:
+            for toy_dicc in toys_dicc:
+                db.insert_product_record( toy_dicc )
 
 def scrap_meli_products(topics=[], tries=10):
     """
@@ -144,4 +149,11 @@ if __name__ == '__main__':
     ])
 
 def get_meli_url(produc_id, product_name):
-    return f'https://articulo.mercadolibre.com.ar/{produc_id}-{product_name}-_JM'
+    return 'https://articulo.mercadolibre.com.ar/{}-{}-_JM/'.format(
+        produc_id, product_name.replace('','-')
+    )
+
+def get_amazon_mx_url(product_id, product_name):
+    return 'https://www.amazon.com.mx/{}/dp/{}/'.format(
+        product_name.replace('','-'), product_id
+    )
