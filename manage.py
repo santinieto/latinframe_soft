@@ -28,14 +28,14 @@ def handle_scrap_args(args):
     if args.all or args.youtube:
         yt.scrap_youtube()
 
-    # Scrapeo SimilarWeb
-    if args.all or args.similarweb:
-        sw.scrap_similarweb()
-
     # Scrapeo los jueuges
     if args.all or args.toys:
         prd.scrap_amazon_products()
         prd.scrap_meli_products()
+
+    # Scrapeo SimilarWeb
+    if args.all or args.similarweb:
+        sw.scrap_similarweb()
 
     # Mando el correo si se requiere
     if args.send_mail:
