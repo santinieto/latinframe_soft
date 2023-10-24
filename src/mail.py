@@ -9,7 +9,7 @@ try:
 except:
     from utils import o_fmt_error
 
-def send_mail(subject='Subject', message='Body', dest='santi.nieto@live.com', filename=None):
+def send_mail(subject='Subject', message='Body', dest='santi.nieto@live.com', filename=None, show_mail=True):
 
     # Crear un objeto MIMEMultipart
     mail = MIMEMultipart()
@@ -57,6 +57,14 @@ def send_mail(subject='Subject', message='Body', dest='santi.nieto@live.com', fi
 
     # Cerrar la conexión con el servidor SMTP
     server_smtp.quit()
+
+    # Muestro el correo
+    if show_mail is True:
+        print()
+        print('From: {}\n'.format(mail['From']))
+        print('To: {}\n'.format(mail['To']))
+        print('Subject: {}\n'.format(mail['Subject']))
+        print('Content:\n{}\n'.format(message))
 
 if __name__ == '__main__':
 
