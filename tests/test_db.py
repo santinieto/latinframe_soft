@@ -11,5 +11,9 @@ class TestDatabase(unittest.TestCase):
             results = [item[0] for item in results]
             print(results)
 
+    def test_insert_product_record(self):
+        with Database() as db:
+            db.insert_product_record()
+
 if __name__ == '__main__':
     unittest.main()

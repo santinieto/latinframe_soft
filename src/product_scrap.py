@@ -1,7 +1,11 @@
 try:
     from src.product import *
+    from src.utils import getHTTPResponse
+    from src.utils import generateRandomUserAgent
 except:
     from product import *
+    from utils import getHTTPResponse
+    from utils import generateRandomUserAgent
 
 def save_html(filename, content):
     # Guardo el contenido HTML
@@ -131,3 +135,6 @@ if __name__ == '__main__':
     scrap_meli_products(topics = [
         'disney',
     ])
+
+def get_meli_url(produc_id, product_name):
+    return f'https://articulo.mercadolibre.com.ar/{produc_id}-{product_name}-_JM'
