@@ -6,6 +6,8 @@ import shutil
 from src.db import Database
 from src.utils import cprint
 from src.utils import get_formatted_date
+from src.utils import get_dir_files
+from src.utils import get_newest_file
 
 def handle_fetch_args(args):
     # Defino un nombre por defecto al modulo
@@ -33,6 +35,21 @@ def handle_backup_args(args):
     # Muestro el mensaje de ayuda
     if args.ayuda:
         pass
+
+    # Restauro una base de datos
+    if args.restore:
+        backups_dir = 'db_backups/'
+
+        if args.restore == 'last':
+            db_backups = get_dir_files(path=backups_dir)
+            target_backup = get_newest_file(db_backups)
+        else:
+            target_backup = args.restore
+
+        with Database() as db:
+            shutil.copy(backups_dir + target_backup, db.db_name)
+
+        print('Se restauro una base de datos: {}'.format(backups_dir + target_backup))
 
     # Ejecuto el analisis de sanidad de la base de datos de Youtube
     elif args.all or args.database:

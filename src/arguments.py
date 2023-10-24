@@ -96,6 +96,7 @@ def get_parser_args():
     backup_parser.add_argument('-ay', '--ayuda', action='store_true', help='Mensaje de ayuda')
     backup_parser.add_argument('-all', '--all', action='store_true', help='Hacer un backup de todo')
     backup_parser.add_argument('-db', '--database', action='store_true', help='Hacer un backup de todo')
+    backup_parser.add_argument('-restore', '--restore', type=str, help='Restaura una base de datos')
 
     # Leo los comandos de teclado
     args = parser.parse_args()
