@@ -427,7 +427,7 @@ class Database:
         try:
             query = '''
             CREATE TABLE IF NOT EXISTS PRODUCT (
-                PRODUCT_ID INTEGER PRIMARY KEY,
+                PRODUCT_ID TEXT PRIMARY KEY,
                 NAME TEXT,
                 DESCRIPTION TEXT,
                 PLATFORM TEXT,
@@ -444,7 +444,7 @@ class Database:
         try:
             query = '''
             CREATE TABLE IF NOT EXISTS PRODUCT_RECORDS (
-                PRODUCT_ID INTEGER PRIMARY KEY,
+                PRODUCT_ID TEXT PRIMARY KEY,
                 PRICE NUMBER,
                 CUOTAS INTEGER,
                 CURRENCY TEXT,
@@ -471,7 +471,8 @@ class Database:
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
             '''
             params = (
-                1, 2, 3, 4, 5, 6,
+                data['product_id'], data['name'], data['description'],
+                data['platform'], data['store'], data['url'],
                 current_time
             )
             self.exec(query, params)
@@ -486,7 +487,9 @@ class Database:
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             '''
             params = (
-                1, 2, 3, 4, 5, 6, 7, 8, 9,
+                data['product_id'], data['price'], data['cuotas'],
+                data['currency'], data['rank'], data['rating'],
+                data['rate_count'], data['most_selled'], data['promoted'],
                 current_time
             )
             self.exec(query, params)

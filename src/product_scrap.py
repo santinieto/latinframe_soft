@@ -2,10 +2,12 @@ try:
     from src.product import *
     from src.utils import getHTTPResponse
     from src.utils import generateRandomUserAgent
+    from src.db import Database
 except:
     from product import *
     from utils import getHTTPResponse
     from utils import generateRandomUserAgent
+    from db import Database
 
 def save_html(filename, content):
     # Guardo el contenido HTML
@@ -95,11 +97,16 @@ def scrap_meli_products(topics=[], tries=10):
         toys = page.find_all('div', class_='ui-search-result__wrapper')
 
         # Iterar sobre los elementos encontrados y extraer la información deseada
+        toys_dicc = []
         for k, toy in enumerate(toys):
             x = MeLiProduct()
             x.html_content = toy
             x.fetch_data()
-            print(x.to_dicc())
+            toys_dicc.append( x.to_dicc() )
+
+        with Database() as db:
+            for toy_dicc in toys_dicc:
+                db.insert_product_record( toy_dicc )
 
 def search_urls_amazon(topics=['toys'], tries=10):
     """

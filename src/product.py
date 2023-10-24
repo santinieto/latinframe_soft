@@ -22,9 +22,9 @@ class Product:
 
     def to_dicc(self):
         return {
-            'id': self.product_id,
+            'product_id': self.product_id,
             'name': self.name,
-            'descrption': self.description,
+            'description': self.description,
             'price': self.price,
             'cuotas': self.cuotas,
             'currency': self.currency,
@@ -67,7 +67,7 @@ class MeLiProduct(Product):
             self.product_id = 'MLA-{}'.format( re.search(r'MLA-?(\d+)', self.html_content.prettify()).group(1) )
 
         try:
-            self.rank = re.search(r'position=(\d+)', self.url).group(1)
+            self.rank = int( re.search(r'position=(\d+)', self.url).group(1) )
         except:
             self.rank = 0
 
