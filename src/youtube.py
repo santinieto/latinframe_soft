@@ -722,7 +722,7 @@ class YoutubeVideo:
                 o_fmt_error(err_code, err_msg, 'Class__YoutubeVideo')
                 pass
 
-    def fetch_video_likes(self, pattern=None):
+    def fetch_video_likes(self, pattern_1=None, pattern_2=None, pattern_3=None, force_method=0):
         """ Function:
             Fetch the likes using a pattern over the HTML code loaded.
             It logs an error if the video title could no be fetched.
@@ -734,40 +734,53 @@ class YoutubeVideo:
             - This methods has a main algorithm and an alternative one
             - The video likes date are set to 0 if everything fails.
         """
+        ####################################################
+        # Metodo 1: Buscar directamente la cuenta de likes
+        ####################################################
+        if force_method == 0 or force_method == 1:
+            pattern = r'"likeCount":"(.*?)"' if pattern_1 is None else pattern_1
+            self.likes = self._fetch_data_from_pattern(
+                pattern, self.html_content, None, None
+            )
 
-        # If a custom pattern is given, use it, if not use a default one
-        pattern = r'"likeCount":"(.*?)"' if pattern is None else pattern
+        ####################################################
+        # Metodo 2: Buscar la frase "Indicar que Me Gusta"
+        ####################################################
+        pattern = r'(\d{1,3}(?:,\d{3})*)(?=\s+(likes|personas|persons))' if pattern_2 is None else pattern_2
+        if self.likes is None or force_method == 2:
+            self.likes = self._fetch_data_from_pattern(
+                pattern, self.html_content, None, None
+            )
+            # Me aseguro que la cadena tiene contenido antes de hacer el replace
+            if self.likes is not None:
+                # Saco las comas si las tuviera
+                self.likes = self.likes.replace(',', '')
 
-        # Try to get data using the pattern given
-        err_code = '0009'
-        err_msg = f'Could not fetch likes for video {self.id} for pattern {pattern}'
-        self.likes = self._fetch_data_from_pattern(
-            pattern, self.html_content, err_code, err_msg
-        )
+        ############################################################
+        # Metodo 3: Busco el numero que acompana a los me gusta
+        # Nota: Si pongo este patro en el buscado de VSC se clava
+        # el editor
+        ###########################################################
+        pattern = r'(\d+(?:,\d+)*)[^"]+“Me gusta”' if pattern_3 is None else pattern_3
+        if self.likes is None or force_method == 3:
+            self.likes = self._fetch_data_from_pattern(
+                pattern, self.html_content, None, None
+            )
+            if self.likes is not None:
+                # Saco las comas si las tuviera
+                self.likes = self.likes.replace(',', '')
 
-        # Alternative method
-        # FIXME: UNDER TEST
-        if self.likes is None:
-            # Transform response to a BS object
-            response = BeautifulSoup(self.html_content, 'html.parser')
-            # Find elements <script>
-            script_tags = response.find_all('script')
-            # Find script that contains "likeCount"
-            for script_tag in script_tags:
-                # Transform to string
-                script_text = script_tag.string
-                #
-                if script_text and '"likeCount":' in script_text:
-                    try:
-                        self.likes = int( re.search(pattern, script_text).group(1) )
-                    except Exception as e:
-                        self.likes = None
-
-        # Set a default value if everything above failed
+        ####################################################
+        # Checkeo de error
+        ####################################################
         if self.likes is None:
             self.likes = 0
             # Set success flag to False
             self.process_success = False
+            # Logeo un error
+            err_code = '0009'
+            err_msg = f'Could not fetch likes for video {self.id}'
+            o_fmt_error(err_code, err_msg, 'Class__YoutubeVideo__fetch_video_likes')
         else:
             self.likes = int(self.likes)
 
@@ -803,7 +816,7 @@ class YoutubeVideo:
             # Se success flag to False
             self.process_success = False
 
-    def fetch_video_tags(self, pattern=None):
+    def fetch_video_tags(self, pattern=None, force_method=0):
         """ Function:
             Fetch the tags using a pattern over the HTML code loaded.
             It logs an error if the video title could no be fetched.
@@ -816,42 +829,40 @@ class YoutubeVideo:
             - The video tags date are set to None if everything fails.
         """
 
-        # If a custom pattern is given, use it, if not use a default one
+        ####################################################
+        # Metodo 1: Uso un patro regular
+        ####################################################
         pattern = r'"keywords":[ ]*\[(.*?)\]' if pattern is None else pattern
+        if force_method == 0 or force_method == 1:
+            self.tags = self._fetch_data_from_pattern(
+                pattern, self.html_content, None, None
+            )
 
-        # Try to get data using the pattern given
-        err_code = '0012'
-        err_msg = f'Could not fetch tags for video {self.id} for pattern {pattern}'
-        self.tags = self._fetch_data_from_pattern(
-            pattern, self.html_content, err_code, err_msg
-        )
-        if self.tags is not None:
-            self.tags = self.tags.replace(',','/')
-            self.tags = self.tags.replace('\\n',' ')
-            self.tags = self.tags.replace('"','')
-
-        # Try an alternative method
-        if self.tags is None:
+        ####################################################
+        # Metodo 2: Uso Beautiful Soup
+        ####################################################
+        if self.tags is None or force_method == 2:
             try:
                 # Transform to a BeautifulSoup object
                 soup = BeautifulSoup(self.html_content, 'html.parser')
                 # Search for "meta" element with atribute "name" equals to "keywords"
                 meta_element = soup.find('meta', attrs={'name': 'keywords'})
                 self.tags = meta_element['content']
-                self.tags = self.tags.replace(',','/')
-                self.tags = self.tags.replace('\\n',' ')
-                self.tags = self.tags.replace('"','')
             except Exception as e:
                 self.tags = None
-                # Log error message
-                msg = f'Could not fetch tags for video {self.id} with error type {str(e)}'
-                o_fmt_error('0013', msg, 'Class__YoutubeVideo')
 
         # Set a default value if everything above failed
         if self.tags is None:
             self.tags = "None"
+            err_code = '0012'
+            err_msg = f'Could not fetch tags for video {self.id}'
+            o_fmt_error(err_code, err_msg, 'Class__YoutubeVideo')
             # Se success flag to False
             self.process_success = False
+        else:
+            self.tags = self.tags.replace(',','/')
+            self.tags = self.tags.replace('\\n',' ')
+            self.tags = self.tags.replace('"','')
 
     def get_video_comments_count(self, pattern=None):
         """ Function:
