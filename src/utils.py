@@ -229,6 +229,12 @@ def cprint(msg):
         console_log_file.write(date + ': ' + msg + "\n")
         console_log_file.close()
 
+def cprint_header(title):
+        cprint('')
+        cprint('-' * 100)
+        cprint('-- {}'.format(title))
+        cprint('-' * 100)
+
 def get_similarweb_url_tuple(domain):
     """"""
     try:
