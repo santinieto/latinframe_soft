@@ -57,16 +57,16 @@ def get_parser_args():
 
     # Modulo de videos
     video_parser.add_argument('-ay', '--ayuda', action='store_true', help='Mensaje de ayuda')
-    video_parser.add_argument('-i', '--id', type=str, help='ID del video')
-    video_parser.add_argument('-u', '--url', type=str, help='URL del video')
+    video_parser.add_argument('-id', '--id', type=str, help='ID del video')
+    video_parser.add_argument('-url', '--url', type=str, help='URL del video')
     video_parser.add_argument('-add', '--add', action='store_true', help='Agregar un video a la base de datos')
     video_parser.add_argument('-del', '--delete', type=str, help='Borrar un video de la base de datos')
     video_parser.add_argument('-save-html', '--save-html', action='store_true', help='Guardar contenido HTML del video')
 
     # Modulo de canales
     channel_parser.add_argument('-ay', '--ayuda', action='store_true', help='Mensaje de ayuda')
-    channel_parser.add_argument('-i', '--id', type=str, help='ID del canal')
-    channel_parser.add_argument('-u', '--url', type=str, help='URL del canal')
+    channel_parser.add_argument('-id', '--id', type=str, help='ID del canal')
+    channel_parser.add_argument('-url', '--url', type=str, help='URL del canal')
     channel_parser.add_argument('-add', '--add', type=str, help='Agregar un canal a la base de datos')
     channel_parser.add_argument('-del', '--delete', type=str, help='Borrar un canal de la base de datos')
     channel_parser.add_argument('-save-html', '--save-html', action='store_true', help='Guardar contenido HTML del canal')
