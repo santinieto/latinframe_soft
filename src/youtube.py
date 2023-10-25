@@ -437,7 +437,7 @@ class YoutubeVideo:
 
         # Get the required information using the classic method
         err_code = '0018'
-        err_msg = f'Could not fetch YoutubeChannel ID for video. Pattern {pattern}'
+        err_msg = f'Could not fetch YoutubeChannel ID for video {self.id}. Pattern {pattern}'
         self.channel_id = self._fetch_data_from_pattern(
             pattern, self.html_content, err_code, err_msg
         )

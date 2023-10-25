@@ -1,4 +1,6 @@
-from src.utils import cprint, getHTTPResponse, is_url_arg
+from src.utils import cprint
+from src.utils import getHTTPResponse
+from src.utils import is_url_arg
 from src.youtube import YoutubeVideo
 from src.youtube import YoutubeChannel
 from src.db import Database
@@ -151,7 +153,7 @@ def scrap_youtube():
 
         # Obtengo la informacion para cada canal
         for channel_id in channel_ids:
-            print(f'Fetching HTML content for channel {channel_id}')
+            cprint(f'- Fetching HTML content for channel {channel_id}')
             channels.append( YoutubeChannel(id=channel_id) )
 
         # Proceso cada canal individualmente

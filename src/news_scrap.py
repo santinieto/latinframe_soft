@@ -27,7 +27,7 @@ def get_id(id_field='news_id', table_name='news', search_field='title', target='
         ):
             # El resultado es una lista de tuplas
             # Me quedo con el primer elemento
-            result = [x[0] for x in query_res]
+            result = [x[0] for x in db.select(query, params)]
             id = int(list(set(result))[0])
 
         # Si no se encuentra el ID obtengo uno nuevo
@@ -36,7 +36,7 @@ def get_id(id_field='news_id', table_name='news', search_field='title', target='
 
             # El resultado es una lista de tuplas
             # Me quedo con el primer elemento
-            result = [x[0] for x in query_res]
+            result = [x[0] for x in db.select(query)]
             max_id = list(set(result))[0]
 
             # Ultimo check
