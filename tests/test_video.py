@@ -19,5 +19,15 @@ class TestVideo(unittest.TestCase):
         video = YoutubeVideo(id=video_id)
         self.assertEqual(video_id, video.id, 'Error while checking Video ID generation')
 
+    def test_video_fromfile(self):
+        filename = 'results/videos/html_video_PVv7pIssaMc_date_20231024_102819.dat'
+
+        with open(filename, 'r', encoding='utf-8') as file:
+            html_content = file.read()
+
+        video = YoutubeVideo(html_content=html_content)
+        print(video.likes)
+        self.assertEqual(1, 1)
+
 if __name__ == '__main__':
     unittest.main()
