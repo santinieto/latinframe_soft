@@ -505,7 +505,9 @@ class Database:
 
         table_names = [
             'VIDEO','VIDEO_RECORDS','CHANNEL','CHANNEL_RECORDS',
-            'NEWS','NEWSPAPERS','SIMILARWEB_DOMAINS','SIMILARWEB_RECORDS','TOPICS',
+            'NEWS','NEWSPAPERS','TOPICS',
+            'SIMILARWEB_DOMAINS','SIMILARWEB_RECORDS',
+            'PRODUCT','PRODUCT_RECORDS'
         ]
 
         for table_name in table_names:

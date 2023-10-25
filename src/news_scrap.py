@@ -13,10 +13,13 @@ except:
 def get_id(id_field='news_id', table_name='news', search_field='title', target='youtube.com'):
     with Database() as db:
         # Defino la consulta que tengo que realizar
-        query = f"select {id_field} from {table_name} where {search_field} = '{target}'"
+        query = "SELECT {} FROM {} WHERE {} = ?".format(
+            id_field, table_name, search_field
+            )
+        params = (target,)
 
         # Obtengo el resultado de busqueda
-        query_res = db.select(query)
+        query_res = db.select(query, params)
 
         # Si obtengo un resultado lo proceso
         if ((query_res is not None) and
@@ -24,7 +27,7 @@ def get_id(id_field='news_id', table_name='news', search_field='title', target='
         ):
             # El resultado es una lista de tuplas
             # Me quedo con el primer elemento
-            result = [x[0] for x in db.select(query)]
+            result = [x[0] for x in query_res]
             id = int(list(set(result))[0])
 
         # Si no se encuentra el ID obtengo uno nuevo
@@ -33,7 +36,7 @@ def get_id(id_field='news_id', table_name='news', search_field='title', target='
 
             # El resultado es una lista de tuplas
             # Me quedo con el primer elemento
-            result = [x[0] for x in db.select(query)]
+            result = [x[0] for x in query_res]
             max_id = list(set(result))[0]
 
             # Ultimo check
