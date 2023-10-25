@@ -248,3 +248,38 @@ def is_url_arg(arg):
         return True
     else:
         return False
+
+def process_unit_suffix(text=None):
+
+    if text is None:
+        return None
+
+    # Definir factores para los sufijos comunes
+    suffixes = {
+        'n': 1e-12,
+        'n': 1e-9,
+        'u': 1e-6,
+        'm': 1e-3,
+        'k': 1e3,
+        'K': 1e3,
+        'M': 1e6,
+        'b': 1e9,
+        'B': 1e9,
+    }
+
+    # Buscar un número seguido de un sufijo
+    match = re.search(r'(\d+(?:[.,]\d+)?)(\s?[kKmMB]?)', text)
+
+    if match:
+        number = float(match.group(1).replace(',', '.'))  # Reemplazar comas por puntos para representar números decimales
+        suffix = match.group(2)
+
+        # Verificar si el sufijo es válido
+        if suffix in suffixes:
+            return number * suffixes[suffix]
+        else:
+            # Si el sufijo no es válido, devolver el número original
+            return number
+    else:
+        # Si no se encuentra un número, devolver None o algún valor de error
+        return None
