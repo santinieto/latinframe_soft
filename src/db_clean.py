@@ -2,8 +2,12 @@ import pandas as pd
 
 try:
     from src.db_plots import *
+    from src.utils import fit_time_to_24_hours
+    from src.utils import time_to_seconds
 except:
     from db_plots import *
+    from utils import fit_time_to_24_hours
+    from utils import time_to_seconds
 
 def has_rows_w_nulls(df):
     """
@@ -213,20 +217,86 @@ def clean_channel_tables(filename_1, filename_2, save_clean=True):
 
     return df_1, df_2
 
+def clean_video_tables(filename_1, filename_2, save_clean=True):
+    # Cargo los CSV
+    df_1 = pd.read_csv(filename_1)
+    df_2 = pd.read_csv(filename_2)
+
+    # Convertir la columna 'UPDATE_DATE' a objetos de fecha
+    # A df_2 en este caso no le hace falta un procesamiento particular
+    df_1['UPDATE_DATE'] = pd.to_datetime(df_1['UPDATE_DATE'])
+
+    # Si la tabla tiene campos nulos los limpio
+    sort_columns = ['VIDEO_ID','UPDATE_DATE']
+    if has_rows_w_nulls(df=df_1) is True:
+        df_1 = fill_null_values(df=df_1, sort_columns=sort_columns)
+
+    # Relleno los posibles valores que sean 0
+    # A df_2 en este caso no le hace falta un procesamiento particular
+    sort_columns = ['VIDEO_ID','UPDATE_DATE']
+    valid_columns = ['VIEWS','LIKES']
+    df_1 = replace_zeros_with_nearest_valid(df=df_1, sort_columns=sort_columns, valid_columns=valid_columns)
+
+    # Borro columnas que se crearon en el proceso
+    try:
+        df_1.drop('level_0', axis=1, inplace=True)
+        df_1.drop('index', axis=1, inplace=True)
+    except:
+        pass
+
+    # En df_2 (lista de videos y sus nombres) voy a borrar los videos que no esten disponibles
+    # Crear una máscara booleana basada en las condiciones
+    condicion_1 = df_2['PUBLISH_DATE'] == '00/00/00'
+    condicion_2 = df_2['VIDEO_NAME'] == 'Unknown'
+
+    # Combinar ambas condiciones usando el operador lógico OR
+    mascara = condicion_1 | condicion_2
+
+    # Crear un nuevo DataFrame sin las filas que cumplen con las condiciones
+    df_2 = df_2[~mascara]
+
+    # Debug de que los elimine efectivamente
+    #print(df_2[ df_2['PUBLISH_DATE'] == '00/00/00' ])
+    #print(df_2[ df_2['VIDEO_NAME'] == '00/00/00' ])
+
+    # Si algun video dura mas de 24 horas lo paso a:
+    # Dias:Horas:Minutos:Segundos
+    # Aplica la función de conversión al DataFrame
+    df_2['VIDEO_LEN'] = df_2['VIDEO_LEN'].apply(time_to_seconds)
+
+    # Paso la duracion de los videos a segundos
+
+    # Guardo los CSV procesados
+    if save_clean == True:
+        df_1.to_csv( filename_1.replace('.csv','_clean.csv') )
+        df_2.to_csv( filename_2.replace('.csv','_clean.csv') )
+
+    return df_1, df_2
+
 if __name__ == '__main__':
 
     # Defino el path de resultados
     CSV_PATH = r'results/db/'
 
+    # # Defino el nombre del archivo
+    # FILENAME_1 = r'channel_records.csv'
+    # FILENAME_2 = r'channel.csv'
+
+    # # Obtengo los CSV limpios
+    # df_1, df_2 = clean_channel_tables(
+    #     filename_1 = CSV_PATH + FILENAME_1,
+    #     filename_2 = CSV_PATH + FILENAME_2
+    # )
+
+    # # Hago los plots de las tablas de canal
+    # plot_channel_tables(df_1, df_2)
+
     # Defino el nombre del archivo
-    FILENAME_1 = r'channel_records.csv'
-    FILENAME_2 = r'channel.csv'
+    FILENAME_1 = r'video_records.csv'
+    FILENAME_2 = r'video.csv'
 
     # Obtengo los CSV limpios
-    df_1, df_2 = clean_channel_tables(
+    df_1, df_2 = clean_video_tables(
         filename_1 = CSV_PATH + FILENAME_1,
         filename_2 = CSV_PATH + FILENAME_2
     )
-
-    # Hago los plots de las tablas de canal
-    plot_channel_tables(df_1, df_2)
