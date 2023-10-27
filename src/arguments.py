@@ -96,6 +96,8 @@ def get_parser_args():
     export_parser.add_argument('-ay', '--ayuda', action='store_true', help='Mensaje de ayuda')
     export_parser.add_argument('-csv', '--tocsv', action='store_true', help='Exporto la base de datos a formato .csv')
     export_parser.add_argument('-xlsx', '--toexcel', action='store_true', help='Exporto la base de datos a formato Excel')
+    export_parser.add_argument('-clean', '--clean', action='store_true', help='Exporto la base de datos limpia')
+    export_parser.add_argument('-plots', '--plots', action='store_true', help='Hago los plots usando la capa correspondiente')
 
     # Modulo de analisis de sanidad
     fetch_parser.add_argument('-ay', '--ayuda', action='store_true', help='Mensaje de ayuda')
