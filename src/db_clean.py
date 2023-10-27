@@ -199,6 +199,13 @@ def clean_channel_tables(filename_1, filename_2, save_clean=True):
     valid_columns = ['SUBSCRIBERS', 'DAILY_SUBS','MONTHLY_SUBS','TOTAL_VIEWS','VIDEOS_COUNT']
     df_1 = replace_zeros_with_nearest_valid(df=df_1, sort_columns=sort_columns, valid_columns=valid_columns)
 
+    # Borro columnas que se crearon en el proceso
+    try:
+        df_1.drop('level_0', axis=1, inplace=True)
+        df_1.drop('index', axis=1, inplace=True)
+    except:
+        pass
+
     # Guardo los CSV procesados
     if save_clean == True:
         df_1.to_csv( filename_1.replace('.csv','_clean.csv') )
