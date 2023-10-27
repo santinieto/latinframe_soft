@@ -6,11 +6,13 @@ try:
     from src.utils import o_fmt_error
     from src.db_clean import clean_channel_tables
     from src.db_clean import clean_video_tables
+    from src.db_clean import clean_similarweb_tables
     from src.db_plots import plot_channel_tables
 except:
     from utils import o_fmt_error
     from db_clean import clean_channel_tables
     from db_clean import clean_video_tables
+    from db_clean import clean_similarweb_tables
     from db_plots import plot_channel_tables
 
 def handle_export_args(args):
@@ -44,6 +46,8 @@ def handle_export_args(args):
         FILENAME_2 = os.environ['SOFT_RESULTS'] + '/db/' + r'channel.csv'
         FILENAME_3 = os.environ['SOFT_RESULTS'] + '/db/' + r'video_records.csv'
         FILENAME_4 = os.environ['SOFT_RESULTS'] + '/db/' + r'video.csv'
+        FILENAME_5 = os.environ['SOFT_RESULTS'] + '/db/' + r'similarweb_records.csv'
+        FILENAME_6 = os.environ['SOFT_RESULTS'] + '/db/' + r'similarweb_domains.csv'
 
         # Obtengo los CSV limpios de tablas de canales
         print('Limpiando tablas de canales de Youtube...')
@@ -54,9 +58,16 @@ def handle_export_args(args):
 
         # Obtengo los CSV limpios de videos de canales
         print('Limpiando tablas de videos de Youtube...')
-        df_1, df_2 = clean_video_tables(
+        df_3, df_4 = clean_video_tables(
             filename_1 = FILENAME_3,
             filename_2 = FILENAME_4
+        )
+
+        # Obtengo los CSV limpios de videos de canales
+        print('Limpiando tablas de SimilarWeb...')
+        df_5, df_6 = clean_similarweb_tables(
+            filename_1 = FILENAME_5,
+            filename_2 = FILENAME_6
         )
 
     # Hago los plots

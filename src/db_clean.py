@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 try:
     from src.db_plots import *
@@ -273,6 +274,50 @@ def clean_video_tables(filename_1, filename_2, save_clean=True):
 
     return df_1, df_2
 
+def clean_similarweb_tables(filename_1, filename_2, save_clean=True):
+    # Cargo los CSV
+    df_1 = pd.read_csv(filename_1)
+    df_2 = pd.read_csv(filename_2)
+
+    # Convertir la columna 'UPDATE_DATE' a objetos de fecha
+    # A df_2 en este caso no le hace falta un procesamiento particular
+    df_1['UPDATE_DATE'] = pd.to_datetime(df_1['UPDATE_DATE'])
+
+    # Crear un DataFrame para almacenar las filas con NaN en "DOMAIN"
+    rows_to_delete = df_2[df_2['DOMAIN'].isna()]
+
+    # Guardar los valores de "DOMAIN_ID" correspondientes
+    domain_id_values = rows_to_delete['DOMAIN_ID'].tolist()
+
+    # Filtrar las filas que NO están en domain_id_values y sobrescribir df_1
+    df_1 = df_1[~df_1['DOMAIN_ID'].isin(domain_id_values)]
+
+    # En df_2 saco las filas que tengan DOMAIN nulo porque no tengo con
+    # con que relacionarlas
+    # Eliminar la fila con NaN en la columna "DOMAIN"
+    df_2 = df_2.dropna(subset=['DOMAIN'])
+
+    # Reemplazar los valores nulos en la columna "YEAR_FOUNDER" con 0
+    df_2['YEAR_FOUNDER'].fillna(0, inplace=True)
+
+    # Paso el BOUNCE_RATE a %
+    df_1['BOUNCE_RATE'] = df_1['BOUNCE_RATE'].apply(lambda x : x*100.0)
+
+    # Relleno los posibles valores que sean 0
+    # A df_2 en este caso no le hace falta un procesamiento particular
+    sort_columns = ['DOMAIN_ID','UPDATE_DATE']
+    valid_columns = ['GLOBAL_RANK','COUNTRY_RANK', 'CATEGORY_RANK']
+    df_1 = replace_zeros_with_nearest_valid(df=df_1, sort_columns=sort_columns, valid_columns=valid_columns)
+
+    # FIXME: Me faltaria agregar la funcion para pasar 17M a 17000000 que la tengo en otro branch
+
+    # Guardo los CSV procesados
+    if save_clean == True:
+        df_1.to_csv( filename_1.replace('.csv','_clean.csv') )
+        df_2.to_csv( filename_2.replace('.csv','_clean.csv') )
+
+    return df_1, df_2
+
 if __name__ == '__main__':
 
     # Defino el path de resultados
@@ -291,12 +336,22 @@ if __name__ == '__main__':
     # # Hago los plots de las tablas de canal
     # plot_channel_tables(df_1, df_2)
 
+    # # Defino el nombre del archivo
+    # FILENAME_1 = r'video_records.csv'
+    # FILENAME_2 = r'video.csv'
+
+    # # Obtengo los CSV limpios
+    # df_1, df_2 = clean_video_tables(
+    #     filename_1 = CSV_PATH + FILENAME_1,
+    #     filename_2 = CSV_PATH + FILENAME_2
+    # )
+
     # Defino el nombre del archivo
-    FILENAME_1 = r'video_records.csv'
-    FILENAME_2 = r'video.csv'
+    FILENAME_1 = r'similarweb_records.csv'
+    FILENAME_2 = r'similarweb_domains.csv'
 
     # Obtengo los CSV limpios
-    df_1, df_2 = clean_video_tables(
+    df_1, df_2 = clean_similarweb_tables(
         filename_1 = CSV_PATH + FILENAME_1,
         filename_2 = CSV_PATH + FILENAME_2
     )
