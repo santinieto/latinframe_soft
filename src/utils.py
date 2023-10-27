@@ -26,8 +26,20 @@ def getHTTPResponse(url, headers = None, responseType = 'page', verbose = False,
             'user-agent' : HEADER
         }
 
-    # Realizamos una solicitud a la página web
-    response = requests.get(url, headers = headers)
+    try:
+        # Realizamos una solicitud a la página web
+        response = requests.get(url, headers = headers)
+    except requests.exceptions.RequestException as e:
+        err_code = '0001'
+        err_msg  = f''
+        err_msg += f'\tERROR! Ocurrio un error inesperado al cargar la URL seleccionada'
+        err_msg += f'\t- URL: {url}'
+        err_msg += f'\t- OK: {response.ok}'
+        err_msg += f'\t- Cogido recibido: {response.status_code}'
+        err_msg += f''
+        err_msg += f'\t- Excepcion: {e}'
+        err_msg += f''
+        o_fmt_error(error_code=err_code, error_message=err_msg, ref_code='getHTTPResponse')
 
     # Debug
     if debug is True:
@@ -51,12 +63,12 @@ def getHTTPResponse(url, headers = None, responseType = 'page', verbose = False,
         else:
             return page
     else:
-        print('')
-        print('\tERROR! Ocurrio un error inesperado al cargar la URL seleccionada')
-        print('\t- URL:', url)
-        print('\t- OK:', response.ok)
-        print('\t- Cogido recibido:', response.status_code)
-        print('')
+        err_code = '0002'
+        err_msg  = f''
+        err_msg += f'\tERROR! Ocurrio un error inesperado al cargar la URL seleccionada'
+        err_msg += f'\t- URL: {url}'
+        err_msg += f''
+        o_fmt_error(error_code=err_code, error_message=err_msg, ref_code='getHTTPResponse')
         return False
 
 # Obtengo el sistema operativo
