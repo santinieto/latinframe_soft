@@ -301,3 +301,27 @@ def process_unit_suffix(text=None):
     else:
         # Si no se encuentra un número, devolver None o algún valor de error
         return None
+
+# Define la función de conversión
+def fit_time_to_24_hours(tiempo):
+    tiempo_list = tiempo.split(':')
+    if len(tiempo_list) != 3:
+        return "Formato de duración incorrecto. Debe ser 'horas:minutos:segundos'."
+
+    horas, minutos, segundos = map(int, tiempo_list)
+    total_segundos = horas * 3600 + minutos * 60 + segundos
+    dias = total_segundos // (24 * 3600)
+    horas_res = (total_segundos % (24 * 3600)) // 3600
+    minutos_res = (total_segundos % 3600) // 60
+    segundos_res = total_segundos % 60
+    tiempo_final = f"{dias}:{horas_res:02}:{minutos_res:02}:{segundos_res:02}"
+    return tiempo_final
+
+def time_to_seconds(tiempo):
+    tiempo_list = tiempo.split(':')
+    if len(tiempo_list) != 3:
+        return "Formato de duración incorrecto. Debe ser 'horas:minutos:segundos'."
+
+    horas, minutos, segundos = map(int, tiempo_list)
+    total_segundos = horas * 3600 + minutos * 60 + segundos
+    return total_segundos
