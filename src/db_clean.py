@@ -265,6 +265,20 @@ def clean_video_tables(filename_1, filename_2, save_clean=True):
     # Aplica la función de conversión al DataFrame
     df_2['VIDEO_LEN'] = df_2['VIDEO_LEN'].apply(time_to_seconds)
 
+    # En df_2 saco las filas que tengan VIDEO_ID nulo porque no tengo con
+    # con que relacionarlas
+    # Eliminar la fila con NaN en la columna "VIDEO_ID"
+    df_1 = df_1.dropna(subset=['VIDEO_ID'])
+    df_2 = df_2.dropna(subset=['VIDEO_ID'])
+
+    # Armo la lista de IDs disponibles
+    valid_ids_1 = df_1['VIDEO_ID'].tolist()
+    valid_ids_2 = df_2['VIDEO_ID'].tolist()
+
+    # Elimino las filas que tiene un ID que se corresponde con la otra fila
+    df_1 = df_1[df_1['VIDEO_ID'].isin(valid_ids_2)]
+    df_2 = df_2[df_2['VIDEO_ID'].isin(valid_ids_1)]
+
     # Paso la duracion de los videos a segundos
 
     # Guardo los CSV procesados
@@ -336,22 +350,22 @@ if __name__ == '__main__':
     # # Hago los plots de las tablas de canal
     # plot_channel_tables(df_1, df_2)
 
-    # # Defino el nombre del archivo
-    # FILENAME_1 = r'video_records.csv'
-    # FILENAME_2 = r'video.csv'
+    # Defino el nombre del archivo
+    FILENAME_1 = r'video_records.csv'
+    FILENAME_2 = r'video.csv'
 
-    # # Obtengo los CSV limpios
-    # df_1, df_2 = clean_video_tables(
-    #     filename_1 = CSV_PATH + FILENAME_1,
-    #     filename_2 = CSV_PATH + FILENAME_2
-    # )
+    # Obtengo los CSV limpios
+    df_1, df_2 = clean_video_tables(
+        filename_1 = CSV_PATH + FILENAME_1,
+        filename_2 = CSV_PATH + FILENAME_2
+    )
 
     # Defino el nombre del archivo
     FILENAME_1 = r'similarweb_records.csv'
     FILENAME_2 = r'similarweb_domains.csv'
 
-    # Obtengo los CSV limpios
-    df_1, df_2 = clean_similarweb_tables(
-        filename_1 = CSV_PATH + FILENAME_1,
-        filename_2 = CSV_PATH + FILENAME_2
-    )
+    # # Obtengo los CSV limpios
+    # df_1, df_2 = clean_similarweb_tables(
+    #     filename_1 = CSV_PATH + FILENAME_1,
+    #     filename_2 = CSV_PATH + FILENAME_2
+    # )
