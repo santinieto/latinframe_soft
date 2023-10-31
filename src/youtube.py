@@ -26,47 +26,53 @@ def fetch_video_data(id, videos_dicc, canal_instance=None):
         canal_instance.add_video(video)
 
 class YoutubeChannel:
-    def __init__(self, id=None, html_content=None, enable_MP=True, debug=True):
+    def __init__(self, id=None, html_content=None, input_dicc=None, enable_MP=True, debug=True):
         """ Constructor of class YoutubeChannel, it requires one of two options:
             - YoutubeChannel ID to look on Youtube
             - Scrap of HTML content to look the information
         """
 
-        # If neither the ID nor the HTML content was load
-        # nothing can be processed and any information will be fetched
-        # None on both fields will be set and an error will be logged
-        if (id is None) and (html_content is None):
+        # Establezco los valores por defecto
+        self.set_default()
+        self.debug = debug
+        self.enable_MP = enable_MP
+
+        # Verifico si tengo un diccionario para cargar
+        if input_dicc is not None:
+            self.id = id
+            self.html_content = html_content
+            self.set_from_dicc(input_dicc)
+
+        # Verifico si tengo un contenido HTML para cargar
+        elif html_content is not None:
+            self.html_content = html_content
+            self.id = id
+            self.get_id()
+
+        # Verifico si tengo un ID para cargar
+        elif id is not None:
+            self.id = id
+            self.html_content = html_content
+            self.get_html_content()
+
+        # Si no tengo nada largo un mensaje de error
+        else:
             self.id = id
             self.html_content = html_content
             # Log error message
             msg = f'Could not create a YoutubeChannel object with giving an ID or HTML scrap. Data could not be collected'
             o_fmt_error('0001', msg, 'Class__YoutubeChannel')
 
-        # Case when the HTML is given but not the channel ID
-        # The channel ID will be tried to be catched from HTML
-        elif (id is None) and (html_content is not None):
-            # Set the HTML content if one is given
-            self.html_content = html_content
-            # Get channel ID
-            self.get_id()
+    def set_from_dicc(self, input_dicc):
+        self.id = input_dicc['channelID']
+        self.channel_name = input_dicc['channelName']
+        self.views = input_dicc['channelViews']
+        self.nVideos = input_dicc['nVideos']
+        self.subscribers = input_dicc['suscribers']
+        self.daily_subs = input_dicc['dailySub']
+        self.monthly_subs = input_dicc['monthlySub']
 
-        # Case when only the channel ID is given
-        # The HTML code needs to be collected
-        elif (id is not None) and (html_content is None):
-            # Set the channel ID using input arguments
-            self.id = id
-            # If HTML content is not being set while construction,
-            # get HTML content using id
-            self.get_html_content()
-
-        else:
-            # Set both channel ID and HTML content using input arguments
-            self.id = id
-            self.html_content = html_content
-
-        # Set defaults values for the class variables
-        self.debug = debug
-        self.enable_MP = enable_MP
+    def set_default(self):
         self.views = 0
         self.nVideos = 0
         self.subscribers = 0
@@ -319,50 +325,57 @@ class YoutubeChannel:
         return videos_dicc
 
 class YoutubeVideo:
-    def __init__(self, id=None, html_content=None, debug=True, en_html_save=True):
+    def __init__(self, id=None, html_content=None, input_dicc=None, debug=True, en_html_save=True):
         """ Constructor of class YoutubeVideo, it requires one of two options:
             - Video ID to look on Youtube
             - Scrap of HTML content to look the information
         """
 
-        # If neither the ID nor the HTML content was load
-        # nothing can be processed and any information will be fetched
-        # None on both fields will be set and an error will be logged
-        if (id is None) and (html_content is None):
+        # Establezco los valores por defecto
+        self.set_default()
+        self.debug = debug
+        self.en_html_save = en_html_save
+
+        # Verifico si tengo un diccionario para cargar
+        if input_dicc is not None:
+            self.id = id
+            self.html_content = html_content
+            self.set_from_dicc(input_dicc)
+
+        # Verifico si tengo un contenido HTML para cargar
+        elif html_content is not None:
+            self.html_content = html_content
+            self.id = id
+            self.get_id()
+
+        # Verifico si tengo un ID para cargar
+        elif id is not None:
+            self.id = id
+            self.html_content = html_content
+            self.get_html_content()
+
+        # Si no tengo nada largo un mensaje de error
+        else:
             self.id = id
             self.html_content = html_content
             # Log error message
             msg = f'Could not create a YoutubeVideo object with giving an ID or HTML scrap. Data could not be collected'
             o_fmt_error('0001', msg, 'Class__YoutubeVideo')
 
-        # Case when the HTML is given but not the video ID
-        # The video ID will be tried to be catched from HTML
-        elif (id is None) and (html_content is not None):
-            # Set the HTML content if it is given
-            self.html_content = html_content
-            # Get video ID
-            # FIXME: Needs to be implemented
-            self.get_id()
+        if input_dicc is None:
+            # Fetch data for every video
+            self.fetch_data()
 
-        # Case when only the video ID is given
-        # The HTML code needs to be collected
-        elif (id is not None) and (html_content is None):
-            # Set the video ID using input arguments
-            self.id = id
-            # If HTML content is not being set while construction,
-            # get HTML content using id
-            self.get_html_content()
+        # Debug
+        if self.debug is True:
+            cprint(f'Created YoutubeVideo object for ID: {self.id}')
 
-        else:
-            # Set both video ID and HTML content using input arguments
-            self.id = id
-            self.html_content = html_content
-
+    def set_default(self):
         # Set defaults values for the class variables
+        self.id = ''
+        self.html_content = ''
         self.channel_id = ''
         self.channel_name = ''
-        self.debug = debug
-        self.en_html_save = en_html_save
         self.title = "Unknown"
         self.views = 0
         self.likes = 0
@@ -372,13 +385,6 @@ class YoutubeVideo:
         self.tags = "None"
         self.publish_date = "00/00/00"
         self.process_success = True
-
-        # Debug
-        if self.debug is True:
-            cprint(f'Created YoutubeVideo object for ID: {self.id}')
-
-        # Fetch data for every video
-        self.fetch_data()
 
     def __str__(self):
         """Returns all fields on the class to be displayed into the screen/file."""
@@ -410,6 +416,19 @@ class YoutubeVideo:
             'publishDate': self.publish_date,
             'videoCommentsCount': self.comments_cnt,
         }
+
+    def set_from_dicc(self, input_dicc):
+        self.id = input_dicc['id']
+        self.title = input_dicc['title']
+        self.channel_id = input_dicc['channel_id']
+        self.channel_name = input_dicc['channel_name']
+        self.views = input_dicc['views']
+        self.length = input_dicc['length']
+        self.mvm = input_dicc['mvm']
+        self.likes = input_dicc['likes']
+        self.tags = input_dicc['tags']
+        self.publish_date = input_dicc['publish_date']
+        self.comments_cnt = input_dicc['comments_cnt']
 
     def get_id(self, pattern=None):
         """Get the ID for the video from the HTML content"""

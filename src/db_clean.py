@@ -211,6 +211,13 @@ def clean_channel_tables(filename_1, filename_2, save_clean=True):
     except:
         pass
 
+    # Me quedo con el registro mas nuevo de cada dia
+    df_1['UPDATE_DATE_DATE'] = df_1['UPDATE_DATE'].dt.date
+    df_1.sort_values(by=['CHANNEL_ID', 'UPDATE_DATE_DATE'], ascending=[True, False], inplace=True)
+    df_1 = df_1.drop_duplicates(subset=['CHANNEL_ID', 'UPDATE_DATE_DATE'], keep='first')
+    df_1 = df_1.drop(columns=['UPDATE_DATE_DATE'])
+    df_1.sort_values(by='RECORD_ID', ascending=True, inplace=True)
+
     # Guardo los CSV procesados
     if save_clean == True:
         df_1.to_csv( filename_1.replace('.csv','_clean.csv') )
@@ -279,6 +286,13 @@ def clean_video_tables(filename_1, filename_2, save_clean=True):
     df_1 = df_1[df_1['VIDEO_ID'].isin(valid_ids_2)]
     df_2 = df_2[df_2['VIDEO_ID'].isin(valid_ids_1)]
 
+    # Me quedo con el registro mas nuevo de cada dia
+    df_1['UPDATE_DATE_DATE'] = df_1['UPDATE_DATE'].dt.date
+    df_1.sort_values(by=['VIDEO_ID', 'UPDATE_DATE_DATE'], ascending=[True, False], inplace=True)
+    df_1 = df_1.drop_duplicates(subset=['VIDEO_ID', 'UPDATE_DATE_DATE'], keep='first')
+    df_1 = df_1.drop(columns=['UPDATE_DATE_DATE'])
+    df_1.sort_values(by='RECORD_ID', ascending=True, inplace=True)
+
     # Paso la duracion de los videos a segundos
 
     # Guardo los CSV procesados
@@ -322,6 +336,13 @@ def clean_similarweb_tables(filename_1, filename_2, save_clean=True):
     sort_columns = ['DOMAIN_ID','UPDATE_DATE']
     valid_columns = ['GLOBAL_RANK','COUNTRY_RANK', 'CATEGORY_RANK']
     df_1 = replace_zeros_with_nearest_valid(df=df_1, sort_columns=sort_columns, valid_columns=valid_columns)
+
+    # Me quedo con el registro mas nuevo de cada dia
+    df_1['UPDATE_DATE_DATE'] = df_1['UPDATE_DATE'].dt.date
+    df_1.sort_values(by=['DOMAIN_ID', 'UPDATE_DATE_DATE'], ascending=[True, False], inplace=True)
+    df_1 = df_1.drop_duplicates(subset=['DOMAIN_ID', 'UPDATE_DATE_DATE'], keep='first')
+    df_1 = df_1.drop(columns=['UPDATE_DATE_DATE'])
+    df_1.sort_values(by='RECORD_ID', ascending=True, inplace=True)
 
     # FIXME: Me faltaria agregar la funcion para pasar 17M a 17000000 que la tengo en otro branch
 

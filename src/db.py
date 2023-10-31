@@ -561,6 +561,7 @@ class Database:
         table_names = [
             'VIDEO','VIDEO_RECORDS','CHANNEL','CHANNEL_RECORDS',
             'NEWS','NEWSPAPERS','SIMILARWEB_DOMAINS','SIMILARWEB_RECORDS','TOPICS',
+            'PRODUCT','PRODUCT_RECORDS'
         ]
 
         for table_name in table_names:
@@ -572,6 +573,10 @@ class Database:
 
             # Obtengo los datos de la tabla
             df = pd.read_sql_query(query, self.conn)
+
+            # Crea la columna "ID Fecha" con el formato YYYYMMDD
+            df['UPDATE_DATE'] = pd.to_datetime(df['UPDATE_DATE'])
+            df['ID Fecha'] = df['UPDATE_DATE'].apply(lambda x: x.strftime('%Y%m%d'))
 
             # Defino el tipo de exportacion
             if ext == '.csv':
