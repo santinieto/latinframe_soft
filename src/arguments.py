@@ -49,6 +49,7 @@ def get_parser_args():
     scrap_parser.add_argument('-sw', '--similarweb', action='store_true', help='Scrapear SimilarWebs')
     scrap_parser.add_argument('-toys', '--toys', action='store_true', help='Scrapear juguetes')
     scrap_parser.add_argument('-mail', '--send-mail', action='store_true', help='Scrapear SimilarWebs')
+    scrap_parser.add_argument('-to', '--mail_dest', type=str, help='Destinatario del correo')
 
     # Modulo de tests
     test_parser.add_argument('-ay', '--ayuda', action='store_true', help='Mensaje de ayuda')

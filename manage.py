@@ -39,7 +39,10 @@ def handle_scrap_args(args):
 
     # Mando el correo si se requiere
     if args.send_mail:
-        send_mail(filename='test.pdf')
+        if args.mail_dest:
+            send_mail(filename='test.pdf', dest=args.mail_dest)
+        else:
+            send_mail(filename='test.pdf')
 
     # Mensaje de error por defecto
     else:
