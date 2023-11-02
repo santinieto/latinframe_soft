@@ -1,6 +1,7 @@
 import unittest
 from src.youtube import YoutubeChannel
 from src.db import Database
+from src.utils import getHTTPResponse
 
 class TestChannel(unittest.TestCase):
 
@@ -71,6 +72,61 @@ class TestChannel(unittest.TestCase):
         # Combine lists
         total_id_list = list(set(csv_ids + db_ids))
         print('Total IDs count:', len(total_id_list))
+
+    def test_get_channel_subchannels(self):
+        import re
+
+        url = 'https://www.youtube.com/@CoComelonEspanol/channels'
+        html_content = getHTTPResponse(url, responseType='text')
+
+        # Patrón regular para encontrar los argumentos de canonicalBaseUrl
+        patron = r'canonicalBaseUrl":"/([^"]+)"'
+
+        # Busca todas las coincidencias del patrón en el texto
+        coincidencias = re.findall(patron, html_content)
+
+        # Elimino los duplicados
+        coincidencias = list( set( coincidencias ) )
+
+        # Imprime los argumentos encontrados
+        for argumento in coincidencias:
+            print(argumento)
+
+    def test_get_channel_subchannels_2(self):
+        import re
+        import json
+
+        url = 'https://www.youtube.com/@CoComelonEspanol/channels'
+        html_content = getHTTPResponse(url, responseType='text')
+
+        # Expresión regular para buscar browseEndpoint
+        regex = r'"browseEndpoint":{[^{}]*?}'
+        matches = re.findall(regex, html_content)
+
+        # Crear un diccionario para almacenar los resultados
+        resultados = []
+
+        # Procesar las coincidencias
+        for match in matches:
+            # Parsear el JSON encontrado en la coincidencia
+            data = json.loads("{" + match + "}")
+
+            # Verificar si el objeto tiene tanto 'browseId' como 'canonicalBaseUrl'
+            if "browseId" in data["browseEndpoint"] and "canonicalBaseUrl" in data["browseEndpoint"]:
+                # Extraer el valor de 'browseId'
+                browse_id = data["browseEndpoint"]["browseId"]
+
+                # Extraer el valor de 'canonicalBaseUrl'
+                canonical_base_url = data["browseEndpoint"]["canonicalBaseUrl"]
+
+                # Agregar una tupla con los valores al resultado
+                resultados.append((browse_id, canonical_base_url))
+
+        # Elimino duplicados
+        resultados = list( set( resultados ) )
+
+        # Imprimir el resultado
+        print(resultados)
 
 if __name__ == '__main__':
     unittest.main()
