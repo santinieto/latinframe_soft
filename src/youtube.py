@@ -159,7 +159,6 @@ class YoutubeChannel:
         else:
             # Fetch channel information
             self.fetch_channel_name()
-            self.fetch_subchannels()
             self.fetch_channel_video_ids()
             self.fetch_channel_stats()
             # Debug
