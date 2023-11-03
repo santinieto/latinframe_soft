@@ -2,6 +2,8 @@ from src.utils import cprint, getHTTPResponse, is_url_arg
 from src.youtube import YoutubeVideo
 from src.youtube import YoutubeChannel
 from src.db import Database
+import os
+import multiprocessing
 
 def scrap_youtube_help(script_name, arg):
     print('Usage:')
@@ -133,6 +135,10 @@ def scrap_channel_w_id(id):
     """
     return YoutubeChannel(id=id)
 
+def create_youtube_channel(channel_id):
+    cprint(f'- Obteniendo contenido HTML para el canal {channel_id} ...')
+    return YoutubeChannel(id=channel_id)
+
 def scrap_youtube():
     """
     Ejemplo:
@@ -145,46 +151,111 @@ def scrap_youtube():
         # Obtengo la lista de IDs de los canales
         channel_ids = db.get_youtube_channel_ids()
 
-        # Creo una lista vacia donde van a estar los objetos
-        # del tipo Channel
-        channels = []
+        if os.environ["SOFT_MP_ENABLE"] == 'True':
+            # Defino el numero de threads
+            nthreads = int( os.environ["SOFT_MP_NTHREADS"] )
+            cprint(f"- Iniciando el procesamiento de {len(channel_ids)} canales en paralelo...")
+            cprint(f"- Se van a utilizar {nthreads} hilos del procesador simultaneamente...")
 
-        # Obtengo la informacion para cada canal
-        for channel_id in channel_ids:
-            print(f'Fetching HTML content for channel {channel_id}')
-            channels.append( YoutubeChannel(id=channel_id) )
+            # Inicializo los procesos
+            pool = multiprocessing.Pool(processes=nthreads)
+            cprint("- Iniciando el pool de procesos...")
+
+            # Creo las instancias de canales
+            # channels = pool.map(YoutubeChannel, channel_ids)
+            channels = pool.map(create_youtube_channel, channel_ids)
+            cprint("- Creando instancias de canales...")
+
+            # Cierro el pool de procesos
+            pool.close()
+            pool.join()
+            cprint("- Cerrando el pool de procesos...")
+        else:
+            # Creo una lista vacia donde van a estar los objetos
+            # del tipo Channel
+            channels = []
+
+            # Obtengo la informacion para cada canal
+            cprint(f"- Iniciando el procesamiento de {len(channel_ids)} canales en serie...")
+            for channel_id in channel_ids:
+                channels.append( create_youtube_channel(channel_id) )
+
+        # Obtengo la lista de IDs de los subcanales
+        # Elimino los duplicados y tambien saco los IDs
+        # que eesten en la lista de channel_ids
+        if True:
+            temp_ids = []
+            for channel in channels:
+                channel.fetch_subchannels()
+                temp_ids.extend( channel.subchannels )
+            temp_ids = list( set( temp_ids ) )
+            subchannel_ids = [x[0] for x in temp_ids if
+                              x[0] not in channel_ids and
+                              x[0].startswith("UC") and
+                              len(x[0]) == 24
+                             ]
+
+            # Scrapeo los subcanales
+            if os.environ["SOFT_MP_ENABLE"] == 'True':
+                # Defino el numero de threads
+                nthreads = int( os.environ["SOFT_MP_NTHREADS"] )
+                cprint(f"- Iniciando el procesamiento de {len(subchannel_ids)} subcanales en paralelo...")
+                cprint(f"- Se van a utilizar {nthreads} hilos del procesador simultaneamente...")
+
+                # Inicializo los procesos
+                pool = multiprocessing.Pool(processes=nthreads)
+                cprint("- Iniciando el pool de procesos...")
+
+                # Creo las instancias de canales
+                # subchannels = pool.map(YoutubeChannel, subchannel_ids)
+                subchannels = pool.map(create_youtube_channel, subchannel_ids)
+                cprint("- Creando instancias de canales...")
+
+                # Cierro el pool de procesos
+                pool.close()
+                pool.join()
+                cprint("- Cerrando el pool de procesos...")
+
+                # Concateno las listas
+                channels.extend( subchannels )
+                cprint("- Concatenando canales y subcanales en una lista unica...")
+            else:
+                cprint(f"- Iniciando el procesamiento de {len(subchannel_ids)} subcanales en serie...")
+                for subchannel_id in subchannel_ids:
+                    channels.append( create_youtube_channel(subchannel_id) )
 
         # Proceso cada canal individualmente
-        for channel in channels:
+        if True:
+            for channel in channels:
 
-            # Para cada canal, actualizo la informacion y guardo
-            # el contenido HTML correspondiente
-            channel.fetch_channel_data()
-            channel.save_html_content()
+                # Para cada canal, actualizo la informacion y guardo
+                # el contenido HTML correspondiente
+                channel.fetch_channel_data()
+                channel.save_html_content()
 
-            # Para ese canal en particular, obtengo todos los IDs
-            # de video asociados que esten disponible en la base
-            # de datos y los agrego para procesarlos
-            query = 'SELECT VIDEO_ID FROM VIDEO WHERE CHANNEL_ID = ?'
-            params = (channel.id,)
-            db_ids = db.select(query, params)
-            db_ids = [item[0] for item in db_ids]
+                # Para ese canal en particular, obtengo todos los IDs
+                # de video asociados que esten disponible en la base
+                # de datos y los agrego para procesarlos
+                query = 'SELECT VIDEO_ID FROM VIDEO WHERE CHANNEL_ID = ?'
+                params = (channel.id,)
+                db_ids = db.select(query, params)
+                db_ids = [item[0] for item in db_ids]
 
-            # Combino las listas
-            total_id_list = channel.video_ids_list + db_ids
-            channel.video_ids_list = list(set(total_id_list))
+                # Combino las listas
+                total_id_list = channel.video_ids_list + db_ids
+                channel.video_ids_list = list(set(total_id_list))
 
-            # Obtengo la informacion mas reciente para cada objeto
-            # del tipo Video
-            channel.fetch_videos_data()
+                # Obtengo la informacion mas reciente para cada objeto
+                # del tipo Video
+                channel.fetch_videos_data()
 
-            # Guardo la informacion en la base de datos
-            db.insert_channel_record(channel.to_dicc())
+                # Guardo la informacion en la base de datos
+                db.insert_channel_record(channel.to_dicc())
 
-            # Obtengo el diccionario de videos
-            videos_dicc = channel.get_videos_dicc()
+                # Obtengo el diccionario de videos
+                videos_dicc = channel.get_videos_dicc()
 
-            # Guardo la informacion para cada video
-            # en la base de datos
-            for key in videos_dicc.keys():
-                db.insert_video_record(videos_dicc[key])
+                # Guardo la informacion para cada video
+                # en la base de datos
+                for key in videos_dicc.keys():
+                    db.insert_video_record(videos_dicc[key])

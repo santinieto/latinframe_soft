@@ -80,6 +80,7 @@ class YoutubeChannel:
         self.monthly_subs = 0
         self.video_ids_list = []
         self.videos = []
+        self.subchannels = []
 
     def add_video(self, video):
         self.videos.append(video)
@@ -94,7 +95,8 @@ class YoutubeChannel:
         ans += f"- Youtube Channel subscribers: {self.subscribers}\n"
         ans += f"- Youtube Channel monthly subscribers: {self.monthly_subs}\n"
         ans += f"- Youtube Channel daily subscribers: {self.daily_subs}\n"
-        ans += f"- Youtube Channel video IDs: {self.video_ids_list}"
+        ans += f"- Youtube Channel video IDs: {self.video_ids_list}\n"
+        ans += f"- Youtube Channel subchannels: {self.subchannels}"
         return ans
 
     def to_dicc(self):
@@ -228,6 +230,38 @@ class YoutubeChannel:
         # Set a default title if everything above failed
         if self.channel_name is None:
             self.channel_name = "Unknown"
+
+    def fetch_subchannels(self):
+
+        url = f'https://www.youtube.com/channel/{self.id}/channels'
+        tmp_html_content = getHTTPResponse(url, responseType='text')
+
+        # Expresión regular para buscar browseEndpoint
+        regex = r'"browseEndpoint":{[^{}]*?}'
+        matches = re.findall(regex, tmp_html_content)
+
+        # Procesar las coincidencias
+        for match in matches:
+            # Parsear el JSON encontrado en la coincidencia
+            data = json.loads("{" + match + "}")
+
+            # Verificar si el objeto tiene tanto 'browseId' como 'canonicalBaseUrl'
+            if( ("browseId" in data["browseEndpoint"]) and
+                ("canonicalBaseUrl" in data["browseEndpoint"])
+            ):
+                # Extraer el valor de 'browseId'
+                browse_id = data["browseEndpoint"]["browseId"]
+
+                # Extraer el valor de 'canonicalBaseUrl'
+                canonical_base_url = data["browseEndpoint"]["canonicalBaseUrl"]
+
+                # Agregar una tupla con los valores al resultado
+                # Un canal no se agrega a si mismo como subcanal
+                if browse_id != self.id:
+                    self.subchannels.append((browse_id, canonical_base_url))
+
+        # Elimino duplicados
+        self.subchannels = list( set( self.subchannels ) )
 
     def fetch_channel_video_ids(self, pattern=None):
         """Get most recent videos list"""

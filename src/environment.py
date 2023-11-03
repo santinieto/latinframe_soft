@@ -11,6 +11,8 @@ def set_environment():
     os.environ["SOFT_RESULTS"] = os.path.join(home, 'results')
     os.environ["SOFT_UTILS"] = os.path.join(home, 'utils')
     os.environ["SOFT_LOGS"] = os.path.join(home, 'logs')
+    os.environ["SOFT_MP_ENABLE"] = 'True'
+    os.environ["SOFT_MP_NTHREADS"] = str( max(1, os.cpu_count() // 2) )
 
     # Leer las credenciales desde el archivo JSON
     try:
@@ -33,6 +35,8 @@ def unset_environment():
     del os.environ["SOFT_RESULTS"]
     del os.environ["SOFT_UTILS"]
     del os.environ["SOFT_LOGS"]
+    del os.environ["SOFT_MP_ENABLE"]
+    del os.environ["SOFT_MP_NTHREADS"]
     del os.environ["EMAIL_ADRESS"]
     del os.environ["EMAIL_PASSWORD"]
     del os.environ["EMAIL_PLATFORM"]
