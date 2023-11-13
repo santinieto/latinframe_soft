@@ -48,6 +48,8 @@ def getHTTPResponse(url, headers = None, responseType = 'page', verbose = False,
     if response.ok == True:
         if responseType == 'text':
             return response.text
+        if responseType == 'request':
+            return response
         else:
             return page
     else:

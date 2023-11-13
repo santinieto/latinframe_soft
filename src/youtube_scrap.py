@@ -5,12 +5,14 @@ from src.db import Database
 import os
 import multiprocessing
 
+
 def scrap_youtube_help(script_name, arg):
     print('Usage:')
-    print( '\t NULL : Execute all scraps')
-    print( '\t -all : Execute all scraps')
-    print( '\t -video <video_id/"url"> [] : Scrap a single video')
-    print( '\t\t -save_html : Save HTML content (optional)')
+    print('\t NULL : Execute all scraps')
+    print('\t -all : Execute all scraps')
+    print('\t -video <video_id/"url"> [] : Scrap a single video')
+    print('\t\t -save_html : Save HTML content (optional)')
+
 
 def handle_video_args(args):
     # Defino un nombre por defecto al modulo
@@ -54,6 +56,7 @@ def handle_video_args(args):
     if args.save_html:
         video.save_html_content()
 
+
 def handle_channel_args(args):
     # Defino un nombre por defecto al modulo
     module_name = 'channel'
@@ -78,25 +81,100 @@ def handle_channel_args(args):
         else:
             print('URL no valida')
 
-    # Mensaje de error por defecto
-    else:
-        print(f'Modulos {module_name}')
-        print(f'\tSe ha producido un error al procesar el comando')
-        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
-
     # Agregar el canal a la base de datos
-    if args.add:
+    elif args.add:
         with Database() as db:
             db.insert_channel_record(channel.to_dicc())
 
     # Borrar el canal a la base de datos
     elif args.delete:
-        print('Channel - Borrar un video a la base de datos - {}'.format(args.delete))
-        print('Comming soon...')
+        # Defino la consulta para obtener los IDs de los canales relacionados
+        if args.delete.startswith('UC'):
+            channel_query = f"select channel_id, channel_name from channel where channel_id like '%{args.delete}%'"
+        else:
+            channel_query = f"select channel_id, channel_name from channel where channel_name like '%{args.delete}%'"
 
+        # Obtengo los ID de cada canal
+        with Database() as db:
+            results = db.select(channel_query)
+            channel_ids = [x[0] for x in results]
+            channel_names = [x[1] for x in results]
+
+        # Si no hay matches entonces salgo
+        if len(channel_ids) == 0:
+            print('No se han encontrado canales relacionados')
+            return
+
+        # Muestro los canales encontrados
+        print('CANALES DE YOUTUBE ENCONTRADOS:')
+        for kk, channel_id in enumerate(channel_ids):
+            print(f'\t- {channel_id}: {channel_names[kk]}')
+
+        # Dejo un espacio en blanco
+        print('')
+
+        # Busco los videos asociados a cada canal
+        video_ids = []
+        for channel_id in channel_ids:
+            print(f'VIDEOS DE YOUTUBE ASOCIADOS AL CANAL {channel_id}:')
+            with Database() as db:
+                videos = [x[0] for x in db.select(
+                    f"select video_id from video where channel_id = '{channel_id}'")]
+                for video in videos:
+                    print(f'\t- {video}')
+
+                # Agrego los videos encontrados a la lista de IDs
+                video_ids.extend(videos)
+
+        # Le pregunto al usuario si confirma borrar todos los registros
+        # Mientras no de una opcion valida, seguir preguntando
+        while True:
+            option = input(
+                '¿Esta seguro que desea borrar todos los videos asociados a los canales seleccionados? [Y/N] ').lower()
+            if option == 'y':
+                with Database() as db:
+                    # Borro los registros de los canales
+                    for channel_id in channel_ids:
+                        db.exec(
+                            f"delete from channel where channel_id = '{channel_id}'")
+                    print(
+                        'Todos los registros de canales seleccionados han sido borrados...')
+
+                    # Borro los registros de los videos de la tabla video
+                    for video_id in video_ids:
+                        db.exec(
+                            f"delete from video where video_id = '{video_id}'")
+                    print(
+                        'Todos los registros de videos asociados a los canales seleccionados han sido borrados...')
+
+                    # Borro los registros de los videos de la tabla video_records
+                    for video_id in video_ids:
+                        db.exec(
+                            f"delete from video_record where video_id = '{video_id}'")
+                    print(
+                        'Todos los registros de videos asociados a los canales seleccionados han sido borrados...')
+
+                return
+            elif option == 'n':
+                print('Operación cancelada')
+                return
+            else:
+                print('Opción no valida')
+        # if input('¿Esta seguro que desea borrar todos los videos asociados a los canales seleccionados? [Y/N] ').lower() == 'y':
+        #     with Database() as db:
+        #         for video_id in video_ids:
+        #             db.delete(f"delete from video where video_id = '{video_id}'")
+        #         print('Todos los videos asociados a los canales seleccionados han sido borrados')
+
+    # Mensaje de error por defecto
+    else:
+        print(f'Modulos {module_name}')
+        print(f'\tSe ha producido un error al procesar el comando')
+        print(f'\tPuede utilizar {module_name} -h para obtener ayuda')
     # Guardo el contenido HTML si fuera necesario
     if args.save_html:
         channel.save_html_content()
+
 
 def scrap_video_w_url(url):
     """
@@ -106,8 +184,9 @@ def scrap_video_w_url(url):
     $ python manage.py -runscrap -video "https://www.youtube.com/watch?v=UAba5-enGOk&ab_channel=JUJALAG" -save_html -add
     $ python manage.py -runscrap -video "https://www.youtube.com/watch?v=GgjrAJQmMVA&ab_channel=RubiusZ" -add
     """
-    html_content = getHTTPResponse(url, responseType = 'text')
+    html_content = getHTTPResponse(url, responseType='text')
     return YoutubeVideo(html_content=html_content)
+
 
 def scrap_video_w_id(id):
     """
@@ -117,14 +196,16 @@ def scrap_video_w_id(id):
     """
     return YoutubeVideo(id=id, en_html_save=False)
 
+
 def scrap_channel_w_url(url):
     """
     Obtengo la informacion de un Canal de Youtube tomando como entrada una ID
     Ejemplo:
     $ python manage.py -runscrap -channel "https://www.youtube.com/@elxokas" -save_html
     """
-    html_content = getHTTPResponse(url, responseType = 'text')
+    html_content = getHTTPResponse(url, responseType='text')
     return YoutubeChannel(html_content=html_content)
+
 
 def scrap_channel_w_id(id):
     """
@@ -135,9 +216,11 @@ def scrap_channel_w_id(id):
     """
     return YoutubeChannel(id=id)
 
+
 def create_youtube_channel(channel_id):
     cprint(f'- Obteniendo contenido HTML para el canal {channel_id} ...')
     return YoutubeChannel(id=channel_id)
+
 
 def scrap_youtube():
     """
@@ -153,9 +236,11 @@ def scrap_youtube():
 
         if os.environ["SOFT_MP_ENABLE"] == 'True':
             # Defino el numero de threads
-            nthreads = int( os.environ["SOFT_MP_NTHREADS"] )
-            cprint(f"- Iniciando el procesamiento de {len(channel_ids)} canales en paralelo...")
-            cprint(f"- Se van a utilizar {nthreads} hilos del procesador simultaneamente...")
+            nthreads = int(os.environ["SOFT_MP_NTHREADS"])
+            cprint(
+                f"- Iniciando el procesamiento de {len(channel_ids)} canales en paralelo...")
+            cprint(
+                f"- Se van a utilizar {nthreads} hilos del procesador simultaneamente...")
 
             # Inicializo los procesos
             pool = multiprocessing.Pool(processes=nthreads)
@@ -176,31 +261,34 @@ def scrap_youtube():
             channels = []
 
             # Obtengo la informacion para cada canal
-            cprint(f"- Iniciando el procesamiento de {len(channel_ids)} canales en serie...")
+            cprint(
+                f"- Iniciando el procesamiento de {len(channel_ids)} canales en serie...")
             for channel_id in channel_ids:
-                channels.append( create_youtube_channel(channel_id) )
+                channels.append(create_youtube_channel(channel_id))
 
         # Obtengo la lista de IDs de los subcanales
         # Elimino los duplicados y tambien saco los IDs
         # que eesten en la lista de channel_ids
-        if True:
+        if False:
             temp_ids = []
             for channel in channels:
                 channel.fetch_subchannels()
-                temp_ids.extend( channel.subchannels )
-            temp_ids = list( set( temp_ids ) )
+                temp_ids.extend(channel.subchannels)
+            temp_ids = list(set(temp_ids))
             subchannel_ids = [x[0] for x in temp_ids if
                               x[0] not in channel_ids and
                               x[0].startswith("UC") and
                               len(x[0]) == 24
-                             ]
+                              ]
 
             # Scrapeo los subcanales
             if os.environ["SOFT_MP_ENABLE"] == 'True':
                 # Defino el numero de threads
-                nthreads = int( os.environ["SOFT_MP_NTHREADS"] )
-                cprint(f"- Iniciando el procesamiento de {len(subchannel_ids)} subcanales en paralelo...")
-                cprint(f"- Se van a utilizar {nthreads} hilos del procesador simultaneamente...")
+                nthreads = int(os.environ["SOFT_MP_NTHREADS"])
+                cprint(
+                    f"- Iniciando el procesamiento de {len(subchannel_ids)} subcanales en paralelo...")
+                cprint(
+                    f"- Se van a utilizar {nthreads} hilos del procesador simultaneamente...")
 
                 # Inicializo los procesos
                 pool = multiprocessing.Pool(processes=nthreads)
@@ -217,12 +305,13 @@ def scrap_youtube():
                 cprint("- Cerrando el pool de procesos...")
 
                 # Concateno las listas
-                channels.extend( subchannels )
+                channels.extend(subchannels)
                 cprint("- Concatenando canales y subcanales en una lista unica...")
             else:
-                cprint(f"- Iniciando el procesamiento de {len(subchannel_ids)} subcanales en serie...")
+                cprint(
+                    f"- Iniciando el procesamiento de {len(subchannel_ids)} subcanales en serie...")
                 for subchannel_id in subchannel_ids:
-                    channels.append( create_youtube_channel(subchannel_id) )
+                    channels.append(create_youtube_channel(subchannel_id))
 
         # Proceso cada canal individualmente
         if True:

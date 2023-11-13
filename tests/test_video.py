@@ -1,5 +1,7 @@
 import unittest
 from src.youtube import YoutubeVideo
+from src.utils import getHTTPResponse
+import re
 
 class TestVideo(unittest.TestCase):
 
@@ -18,6 +20,38 @@ class TestVideo(unittest.TestCase):
         video_id = 'tNba_Da5sHk'
         video = YoutubeVideo(id=video_id)
         self.assertEqual(video_id, video.id, 'Error while checking Video ID generation')
+
+    def test_video_belongs_to_playlist(self):
+        url = 'https://www.youtube.com/watch?v=qY_qmvQ2rQ'
+        html_content = getHTTPResponse(url, responseType='text')
+
+        # print(f'- URL inicial: {url}')
+        # print(f'- URL final: {response.url}')
+
+        # # Verifica si hubo redirecciones
+        # if response.history:
+        #     print("URL redireccionada:")
+        #     for resp in response.history:
+        #         print(resp.url)
+
+        # Guardo el contenido html
+        with open('video.dat', 'w', encoding='utf-8') as archivo:
+            archivo.write(html_content)
+
+        # Patrón regular para encontrar la URL de la lista de reproducción
+        # patron = r'playlist\?list=\w+'
+        patron = r'"playlistId":"(PL[^"]+)"'
+
+        # Buscar la coincidencia en la cadena
+        resultado = re.search(patron, html_content)
+        print
+
+        # Comprobar si se encontró una coincidencia
+        if resultado:
+            url_lista_reproduccion = resultado.group(1)
+            print("URL de la lista de reproducción:", url_lista_reproduccion)
+        else:
+            print("No se encontró una URL de lista de reproducción en la cadena.")
 
 if __name__ == '__main__':
     unittest.main()
