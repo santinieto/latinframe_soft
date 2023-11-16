@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 import time
 
 try:
@@ -11,8 +12,9 @@ except:
     from utils import cprint
     from utils import o_fmt_error
 
+
 class Driver:
-    def __init__(self, browser="chrome", driver_path=r'drivers/',results_path='results/similarweb/'):
+    def __init__(self, browser="chrome", driver_path=r'drivers/', results_path='results/similarweb/'):
         """
         Inicializa el objeto Driver con el navegador especificado (por defecto, Chrome).
 
@@ -37,21 +39,26 @@ class Driver:
         """
         try:
             if self.browser == "chrome":
+                # Establezco el path
+                service = Service(
+                    executable_path=self.driver_path + '\chromedriver.exe')
                 # Deshabilito la lectura de puertos USB
                 chrome_options = webdriver.ChromeOptions()
                 chrome_options.add_argument("--disable-usb-device-detection")
-                chrome_options.add_experimental_option('excludeSwitches', ['enable-logging']) # Este es el que funciona
+                chrome_options.add_experimental_option(
+                    'excludeSwitches', ['enable-logging'])  # Este es el que funciona
                 # Abro el driver
                 self.driver = webdriver.Chrome(
-                    self.driver_path + '\chromedriver.exe',
-                    options = chrome_options
-                    )
+                    service=service, options=chrome_options)
             elif self.browser == "firefox":
-                self.driver = webdriver.Firefox(self.driver_path + '\chromedriver.exe')
+                self.driver = webdriver.Firefox(
+                    self.driver_path + '\chromedriver.exe')
             elif self.browser == "edge":
-                self.driver = webdriver.Edge(self.driver_path + '\chromedriver.exe')
+                self.driver = webdriver.Edge(
+                    self.driver_path + '\chromedriver.exe')
             else:
-                raise ValueError("Navegador no válido. Debe ser 'chrome', 'firefox' o 'edge.")
+                raise ValueError(
+                    "Navegador no válido. Debe ser 'chrome', 'firefox' o 'edge.")
         except Exception as e:
             msg = f"Error al abrir el navegador: {e}"
             cprint(msg)
@@ -115,30 +122,31 @@ class Driver:
 
     def save_html_after_find(self, timeout=30, filename="scraped_page.html"):
 
-        try:
-            # Define un tiempo máximo de espera
-            wait = WebDriverWait(self.driver, timeout)
+        # try:
+        # Define un tiempo máximo de espera
+        wait = WebDriverWait(self.driver, timeout)
 
-            # Espera hasta que aparezca el elemento con la clase "app-section__content"
-            elemento = wait.until(
-                EC.presence_of_element_located((By.CLASS_NAME, 'app-section__content'))
-            )
+        # Espera hasta que aparezca el elemento con la clase "app-section__content"
+        elemento = wait.until(
+            EC.presence_of_element_located(
+                (By.CLASS_NAME, 'app-section__content'))
+        )
 
-            # Una vez que el elemento está presente, obtén el contenido HTML
-            contenido_html = elemento.get_attribute('outerHTML')
+        # Una vez que el elemento está presente, obtén el contenido HTML
+        contenido_html = elemento.get_attribute('outerHTML')
 
-            # Actualizo el contenido HTML
-            self.update_html_content()
+        # Actualizo el contenido HTML
+        self.update_html_content()
 
-            # Guardo el contenido HTML
-            self.save_html_content(filename=filename)
+        # Guardo el contenido HTML
+        self.save_html_content(filename=filename)
 
-            # Cierro el navegador
-            self.close_driver()
-        except Exception as e:
-            msg = f"\t--> ERROR: Could not fetch data\n\t-->        Driver.save_html_after_find()\nError: {e}"
-            cprint(msg)
-            o_fmt_error('0005', msg, 'Class__Driver')
+        # Cierro el navegador
+        self.close_driver()
+        # except Exception as e:
+        #     msg = f"\t--> ERROR: Could not fetch data\n\t-->        Driver.save_html_after_find()\nError: {e}"
+        #     cprint(msg)
+        #     o_fmt_error('0005', msg, 'Class__Driver')
 
     def scrap_url(self, url, alias, delay=20, save_method='find'):
 
@@ -173,7 +181,7 @@ class Driver:
         """
 
         for kk, input_element in enumerate(input_list):
-            url = input_element[0].replace('//','/')
+            url = input_element[0].replace('//', '/')
             alias = input_element[1]
 
             self.print_scrap_message(url, (kk+1), len(input_list))
@@ -181,9 +189,10 @@ class Driver:
             self.scrap_url(url, alias, delay=delay)
 
     def print_scrap_message(self, url, iter=None, total=None):
-        if((iter is not None) and (total is not None)):
-            cprint('Driver --> Scrap ({}/{})'.format(iter,total))
+        if ((iter is not None) and (total is not None)):
+            cprint('Driver --> Scrap ({}/{})'.format(iter, total))
         cprint('\t--> URL: {}'.format(url))
+
 
 # Ejemplo de uso
 if __name__ == "__main__":
@@ -191,7 +200,7 @@ if __name__ == "__main__":
     driver = Driver(browser="chrome")
 
     # Armo una lista de webs a visitar
-    url_list =[
+    url_list = [
         ('https://www.similarweb.com/website/youtube.com/', 'youtube'),
         ('https://www.similarweb.com/website/google.com/', 'google'),
     ]
